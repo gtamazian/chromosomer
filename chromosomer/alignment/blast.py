@@ -86,7 +86,7 @@ class Blast(object):
                 line_parts[i] = int(line_parts[i])
             except ValueError:
                 logging.error(
-                    'line{0}: the incorrect integer value {'
+                    'line {0}: the incorrect integer value {'
                     '1}'.format(self.__lineno, line_parts[i]))
                 raise BlastAlignmentError
 
