@@ -19,3 +19,11 @@ class BlastAlignmentError(AlignmentError):
     in the BLAST tabular output format.
     """
     pass
+
+
+class LavAlignmentError(AlignmentError):
+    """
+    The class describes an error that may occur while parsing a file
+    in the LAV format.
+    """
+    pass
