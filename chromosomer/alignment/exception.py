@@ -11,3 +11,11 @@ class AlignmentError(Exception):
     parsing an alignment file.
     """
     pass
+
+
+class BlastAlignmentError(AlignmentError):
+    """
+    The class describes an error that may occur while parsing a file
+    in the BLAST tabular output format.
+    """
+    pass
