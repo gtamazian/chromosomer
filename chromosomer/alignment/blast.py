@@ -27,8 +27,8 @@ class Blast(object):
 
     def __init__(self, filename):
         """
-        Given a name of a file, create a BlastAlignment parser object
-        to read data from it.
+        Given a name of a file, create a BLAST tabular format parser
+        object to read data from it.
 
         :param filename: a name of a file in the BLAST tabular format
         :type filename: str
@@ -42,7 +42,8 @@ class Blast(object):
         Iterate through alignments in the file the object was created
         from.
 
-        :return: BLast.Alignment
+        :return: an alignment for the file the object was created from
+        :rtype: Blast.Alignment
         """
         with open(self.__filename) as blast_file:
             for self.__line in blast_file:
@@ -63,7 +64,7 @@ class Blast(object):
 
         # check if the line contains the proper number of columns
         if len(line_parts) < 12:
-            logging.error('line {0}: the incorrect number of '
+            logging.error('line {}: the incorrect number of '
                           'columns'.format(self.__lineno))
             raise BlastAlignmentError
 
@@ -74,8 +75,8 @@ class Blast(object):
                 line_parts[i] = float(line_parts[i])
             except ValueError:
                 logging.error(
-                    'line {0}: the incorrect numerical value {'
-                    '1}'.format(self.__lineno, line_parts[i]))
+                    'line {}: the incorrect numerical value {'
+                    '}'.format(self.__lineno, line_parts[i]))
                 raise BlastAlignmentError
 
         # convert numeric values of alignment length, the number of
@@ -86,8 +87,8 @@ class Blast(object):
                 line_parts[i] = int(line_parts[i])
             except ValueError:
                 logging.error(
-                    'line {0}: the incorrect integer value {'
-                    '1}'.format(self.__lineno, line_parts[i]))
+                    'line {}: the incorrect integer value {'
+                    '}'.format(self.__lineno, line_parts[i]))
                 raise BlastAlignmentError
 
         return Blast.Alignment(*line_parts)

@@ -28,7 +28,6 @@ class TestBlastAlignment(unittest.TestCase):
         # silence the logging messages
         logging.disable(logging.ERROR)
 
-
     def test_alignments(self):
         """
         Check if the parser reads a file in the BLAST tabular format
@@ -63,8 +62,7 @@ class TestBlastAlignment(unittest.TestCase):
             parser = Blast(os.path.join(
                 'data', 'blast', 'incorrect_input', incorrect_input))
             with self.assertRaises(BlastAlignmentError):
-                alignment = parser.alignments().next()
-                self.assertIsInstance(alignment, Blast.Alignment)
+                parser.alignments().next()
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestBlastAlignment)
 unittest.TextTestRunner(verbosity=2).run(suite)
