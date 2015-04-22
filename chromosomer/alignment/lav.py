@@ -70,11 +70,20 @@ class Lav(object):
 
     def __parse_section_header(self):
         """
-        Parse a section header.
+        Parse a section header, return False if the header indicates
+        the end of the file.
+
+        :return: a boolean value indicating if the current header
+            corresponds to a new section
+        :rtype: bool
         """
         self.__line = self.__handler.readline().rstrip()
         self.__lineno += 1
-        if self.__line != '#:lav':
+        if self.__line == '#:lav':
+            return True
+        elif self.__line == '#:eof':
+            return False
+        else:
             logger.error('self.__line {}: an incorrect section '
                          'header'.format(self.__lineno))
             raise LavAlignmentError
