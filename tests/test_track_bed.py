@@ -62,3 +62,9 @@ class TestBedWriter(unittest.TestCase):
                 open(self.__output_file) as written_file:
             for x, y in izip(original_file, written_file):
                 self.assertEqual(x, y)
+
+suite = unittest.TestLoader().loadTestsFromTestCase(TestBedReader)
+unittest.TextTestRunner(verbosity=2).run(suite)
+
+suite = unittest.TestLoader().loadTestsFromTestCase(TestBedWriter)
+unittest.TextTestRunner(verbosity=2).run(suite)
