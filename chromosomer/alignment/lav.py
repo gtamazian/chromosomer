@@ -80,8 +80,8 @@ class Lav(object):
             while self.__parse_section_header():
                 self.__parse_s_stanza()
                 h_stanza = self.__parse_h_stanza()
-                first_seq = h_stanza[0].seq_name
-                second_seq = h_stanza[1].seq_name
+                first_seq = h_stanza[0].seq_name.split()[0]
+                second_seq = h_stanza[1].seq_name.split()[0]
                 self.__line = self.__handler.readline().rstrip()
                 self.__lineno += 1
                 # read a stanza of the corresponding type according
@@ -146,7 +146,7 @@ class Lav(object):
         stanza_contents = []
         self.__line = self.__handler.readline()
         self.__lineno += 1
-        while self.__line != '}':
+        while self.__line.rstrip() != '}':
             stanza_contents.append(self.__line)
             self.__line = self.__handler.readline()
             self.__lineno += 1
@@ -460,7 +460,7 @@ class Lav(object):
 
         # the lines containing masked regions
         self.__line = self.__handler.readline().rstrip()
-        self.__line += 1
+        self.__lineno += 1
         n_flag = False
         result_regions = []
         result_base_count = None
