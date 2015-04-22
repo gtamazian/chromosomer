@@ -69,8 +69,8 @@ class Reader(object):
             try:
                 line_parts[i] = int(line_parts[i])
             except ValueError:
-                logger.error('line {}: the incorrect numeric value {'
-                             '}'.format(self.__lineno, line_parts[i]))
+                logger.error('line %d: the incorrect numeric value '
+                             '%s', self.__lineno, line_parts[i])
                 raise BedError
 
         # form the tuple to be returned as a result
