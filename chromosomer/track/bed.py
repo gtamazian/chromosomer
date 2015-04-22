@@ -43,7 +43,7 @@ class Reader(object):
         created from.
 
         :return: a record from the BED file the object was created from
-        :rtype: Reader.BedRecord
+        :rtype: BedRecord
         """
         with open(self.__filename) as bed_file:
             for self.__line in bed_file:
@@ -55,7 +55,7 @@ class Reader(object):
         Parse the current line from the BED file.
 
         :return: a record from the BED file the object was created from
-        :rtype: Reader.BedRecord
+        :rtype: BedRecord
         """
         line_parts = self.__line.split()
 
