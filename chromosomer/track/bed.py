@@ -15,7 +15,7 @@ bed_columns = ('seq', 'start', 'end', 'name', 'score', 'strand',
                'thick_start', 'thick_end', 'color', 'block_num',
                'block_sizes', 'block_starts', 'extra')
 
-bed_numeric_fields = (1, 2, 4, 6, 7, 9, 10, 11)
+bed_numeric_fields = (1, 2, 4, 6, 7, 9)
 
 BedRecord = namedtuple('BedRecord', bed_columns)
 
@@ -57,7 +57,7 @@ class Reader(object):
         :return: a record from the BED file the object was created from
         :rtype: Reader.BedRecord
         """
-        line_parts = self.__line.split(None, 12)
+        line_parts = self.__line.split()
 
         # convert numeric values: start, end, score, thick_start,
         # thick_end, block_num, blocks_sizes and block_starts; the
@@ -74,7 +74,7 @@ class Reader(object):
                 raise BedError
 
         # form the tuple to be returned as a result
-        line_parts += ([None] * (12 - len(line_parts)))
+        line_parts += ([None] * (len(bed_columns) - len(line_parts)))
         result = BedRecord(*line_parts)
 
         return result
