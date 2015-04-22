@@ -396,7 +396,7 @@ class Lav(object):
                     except ValueError:
                         logger.error(
                             'line {}: the incorrect numeric value {'
-                            '1}'.format(self.__lineno, line_parts[i]))
+                            '}'.format(self.__lineno, line_parts[i]))
                         raise LavAlignmentError
                 alignment_block.segments.append(
                     Lav.GapFreeSegment(*line_parts[1:]))
