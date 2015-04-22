@@ -78,3 +78,40 @@ class Reader(object):
         result = BedRecord(*line_parts)
 
         return result
+
+
+class Writer(object):
+    """
+    The class implements writing to a file in the BED format.
+    """
+    def __init__(self, filename):
+        """
+        Given a name of a file, create a BED writer object to write
+        data to it.
+
+        :param filename: a name of a file to write BED records to
+        :type filename: str
+        """
+        self.__filename = filename
+
+    def __enter__(self):
+        self.__output = open(self.__filename, 'w')
+        return self
+
+    def write(self, bed_record):
+        """
+        Given a BED record, write it to the file specified when the
+        object was creted.
+
+        :param bed_record: a BED record to be written to the file
+        :type: BedRecord
+        """
+        num_fields = len(bed_record)
+        # check if the last column contains any values
+        if bed_record.extra is None:
+            num_fields -= 1
+        template = '\t'.join(['{}'] * num_fields) + '\n'
+        self.__output.write(template.format(*bed_record))
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.__output.close()
