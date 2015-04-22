@@ -64,8 +64,8 @@ class Blast(object):
 
         # check if the line contains the proper number of columns
         if len(line_parts) < 12:
-            logging.error('line {}: the incorrect number of '
-                          'columns'.format(self.__lineno))
+            logging.error('line %d: the incorrect number of '
+                          'columns', self.__lineno)
             raise BlastAlignmentError
 
         # convert numeric values of identity, e-value and bit score
@@ -75,8 +75,8 @@ class Blast(object):
                 line_parts[i] = float(line_parts[i])
             except ValueError:
                 logging.error(
-                    'line {}: the incorrect numerical value {'
-                    '}'.format(self.__lineno, line_parts[i]))
+                    'line %d: the incorrect numerical value '
+                    '%s', self.__lineno, line_parts[i])
                 raise BlastAlignmentError
 
         # convert numeric values of alignment length, the number of
@@ -87,8 +87,8 @@ class Blast(object):
                 line_parts[i] = int(line_parts[i])
             except ValueError:
                 logging.error(
-                    'line {}: the incorrect integer value {'
-                    '}'.format(self.__lineno, line_parts[i]))
+                    'line %d: the incorrect integer value '
+                    '%s', self.__lineno, line_parts[i])
                 raise BlastAlignmentError
 
         return Blast.Alignment(*line_parts)

@@ -124,8 +124,8 @@ class Lav(object):
         elif self.__line == '#:eof':
             return False
         else:
-            logger.error('self.__line {}: an incorrect section '
-                         'header'.format(self.__lineno))
+            logger.error('line %d: an incorrect section header',
+                         self.__lineno)
             raise LavAlignmentError
 
     def __parse_d_stanza(self):
@@ -138,8 +138,8 @@ class Lav(object):
         self.__line = self.__handler.readline().rstrip()
         self.__lineno += 1
         if self.__line != 'd {':
-            logger.error('line {}: an incorrect d-stanza '
-                         'header'.format(self.__lineno))
+            logger.error('line %d: an incorrect d-stanza header',
+                         self.__lineno)
             raise LavAlignmentError
 
         # start reading the d-stanza contents
@@ -166,8 +166,8 @@ class Lav(object):
 
         # check the first line of the stanza
         if self.__line != 's {':
-            logger.error('line {}: an incorrect s-stanza '
-                         'header'.format(self.__lineno))
+            logger.error('line %d: an incorrect s-stanza header',
+                         self.__lineno)
             raise LavAlignmentError
 
         first_line = self.__lineno
@@ -180,25 +180,24 @@ class Lav(object):
             # there must be only two sequence descriptions in the
             # stanza
             if len(sequence_files) > 2:
-                logger.error('line {}: too many sequence files in'
-                             'the s stanza'.format(self.__lineno))
+                logger.error('line %d: too many sequence files in'
+                             'the s stanza', self.__lineno)
                 raise LavAlignmentError
             # parse each sequence line; 5 is the greatest number of
             # parts in the sequence description
             line_parts = self.__line.split(None, 5)
             # there must be either 3 or 5 parts in the line
             if len(line_parts) not in {3, 5}:
-                logger.error('line {}: the incorrect number of '
-                             'sequence file description parts ({'
-                             '})'.format(self.__lineno,
-                                         len(line_parts)))
+                logger.error('line %d: the incorrect number of '
+                             'sequence file description parts (%d)',
+                             self.__lineno, len(line_parts))
                 raise LavAlignmentError
             # remove quotes from the file name
             if len(line_parts) > 2:
                 line_parts[0] = line_parts[0][1:-1]
             else:
-                logger.error('line {}: an empty file name'.format(
-                    self.__lineno))
+                logger.error('line %d: an empty file name',
+                             self.__lineno)
                 raise LavAlignmentError
             # convert numeric values
             try:
@@ -208,8 +207,8 @@ class Lav(object):
                     line_parts[3] = int(line_parts[3])
                     line_parts[4] = int(line_parts[4])
             except ValueError:
-                logger.error('line {}: incorrect numeric'
-                             'values'.format(self.__lineno))
+                logger.error('line %d: incorrect numeric values',
+                             self.__lineno)
                 raise LavAlignmentError
             # form a SStanzaField tuple and write it to the sequence
             # list
@@ -222,8 +221,8 @@ class Lav(object):
 
         # check that there are exactly two sequence files
         if len(sequence_files) < 2:
-            logger.error('lines {}--{}: a pair of sequence lines '
-                         'required'.format(first_line, self.__lineno))
+            logger.error('lines %d--%d: a pair of sequence lines '
+                         'required', first_line, self.__lineno)
             raise LavAlignmentError
 
         return sequence_files
@@ -241,8 +240,8 @@ class Lav(object):
 
         # check the first line of the stanza
         if self.__line != 'h {':
-            logger.error('line {}: an incorrect h-stanza '
-                         'header'.format(self.__lineno))
+            logger.error('line %d: an incorrect h-stanza header',
+                         self.__lineno)
             raise LavAlignmentError
 
         first_line = self.__lineno
@@ -255,8 +254,8 @@ class Lav(object):
             # there must be only two sequence descriptions in the
             # stanza
             if len(header_lines) > 2:
-                logger.error('line {}: too many header lines in the '
-                             'h stanza'.format(self.__lineno))
+                logger.error('line %d: too many header lines in the '
+                             'h stanza', self.__lineno)
                 raise LavAlignmentError
             # parse the header line having been read
             line_parts = self.__line.split()
@@ -264,18 +263,18 @@ class Lav(object):
             if len(line_parts[0]) > 2:
                 line_parts[0] = line_parts[0][1:-1]
             else:
-                logger.error('line {}: an empty sequence '
-                             'header'.format(self.__lineno))
+                logger.error('line %d: an empty sequence '
+                             'header', self.__lineno)
                 raise LavAlignmentError
             # each header line must start with '>'
             if not line_parts[0].startswith('>'):
-                logger.error('line {}: the header line must start '
-                             'with >'.format(self.__lineno))
+                logger.error('line %d: the header line must start '
+                             'with >', self.__lineno)
                 raise LavAlignmentError
             # check if a sequence name is present in the line
             if len(line_parts[0]) < 2:
-                logger.error('line {}: the header line contains no '
-                             'sequence name'.format(self.__lineno))
+                logger.error('line %d: the header line contains no '
+                             'sequence name', self.__lineno)
                 raise LavAlignmentError
             else:
                 # remove '>' from the header
@@ -301,9 +300,8 @@ class Lav(object):
 
         # check that there are exactly two header lines
         if len(header_lines) < 2:
-            logger.error('lines {}--{}: a pair of header lines '
-                         'required'.format(first_line + 1,
-                                           self.__lineno))
+            logger.error('lines %d--%d: a pair of header lines '
+                         'required', first_line, self.__lineno)
             raise LavAlignmentError
 
         return header_lines
@@ -318,8 +316,8 @@ class Lav(object):
         """
         # check the first line of the a stanza
         if self.__line != 'a {':
-            logger.error('line {}: an incorrect a-stanza '
-                         'header'.format(self.__lineno))
+            logger.error('line %d: an incorrect a-stanza header',
+                         self.__lineno)
             raise LavAlignmentError
 
         # start reading the a stanza: read three lines describing the
@@ -333,12 +331,12 @@ class Lav(object):
             try:
                 alignment_block_score = int(line_parts[1])
             except ValueError:
-                logger.error('line {}: the incorrect score value {'
-                             '}'.format(self.__lineno, line_parts[1]))
+                logger.error('line %d: the incorrect score value %s',
+                             self.__lineno, line_parts[1])
                 raise LavAlignmentError
         else:
-            logger.error('line {}: the incorrect score record in an a-'
-                         'stanza'.format(self.__lineno))
+            logger.error('line %d: the incorrect score record in an a-'
+                         'stanza', self.__lineno)
             raise LavAlignmentError
 
         # start positions of aligned sequences
@@ -350,13 +348,12 @@ class Lav(object):
                 alignment_block_first_start = int(line_parts[1])
                 alignment_block_second_start = int(line_parts[2])
             except ValueError:
-                logger.error('line {}: the incorrect position value {'
-                             '} or {}'.format(self.__lineno,
-                                              *line_parts))
+                logger.error('line %d: the incorrect position value '
+                             '%s or %s', self.__lineno, *line_parts)
                 raise LavAlignmentError
         else:
-            logger.error('line {}: an incorrect aligned block record '
-                         'in an a-stanza'.format(self.__lineno))
+            logger.error('line %d: an incorrect aligned block record '
+                         'in an a-stanza', self.__lineno)
             raise LavAlignmentError
 
         # end positions of aligned sequences
@@ -368,13 +365,12 @@ class Lav(object):
                 alignment_block_first_end = int(line_parts[1])
                 alignment_block_second_end = int(line_parts[2])
             except ValueError:
-                logger.error('line {}: an incorrect position value {'
-                             '} or {}'.format(self.__lineno,
-                                              *line_parts))
+                logger.error('line %d: an incorrect position value '
+                             '%s or %s', self.__lineno, *line_parts)
                 raise LavAlignmentError
         else:
-            logger.error('line {}: an incorrect aligned block record '
-                         'in an a-stanza'.format(self.__lineno))
+            logger.error('line %d: an incorrect aligned block record '
+                         'in an a-stanza', self.__lineno)
             raise LavAlignmentError
 
         alignment_block = Lav.AStanzaItem(
@@ -395,14 +391,14 @@ class Lav(object):
                         line_parts[i] = int(line_parts[i])
                     except ValueError:
                         logger.error(
-                            'line {}: the incorrect numeric value {'
-                            '}'.format(self.__lineno, line_parts[i]))
+                            'line %d: the incorrect numeric value %s',
+                            self.__lineno, line_parts[i])
                         raise LavAlignmentError
                 alignment_block.segments.append(
                     Lav.GapFreeSegment(*line_parts[1:]))
             else:
-                logger.error('line {}: the incorrect segment record '
-                             'in an a-stanza'.format(self.__lineno))
+                logger.error('line %d: the incorrect segment record '
+                             'in an a-stanza', self.__lineno)
                 raise LavAlignmentError
             # read the next line
             self.__line = self.__handler.readline().rstrip()
@@ -418,7 +414,8 @@ class Lav(object):
         :rtype: int
         """
         if self.__line != 'x {':
-            logger.error('line {0}: an incorrect x-stanza header')
+            logger.error('line %d: an incorrect x-stanza header',
+                         self.__lineno)
             raise LavAlignmentError
 
         # read a sigle line containing the number of newly masked bases
@@ -430,19 +427,19 @@ class Lav(object):
             try:
                 newly_masked_bases = int(line_parts[1])
             except ValueError:
-                logger.error('line {}: the incorrect numeric value {'
-                             '}'.format(self.__lineno, line_parts[1]))
+                logger.error('line %d: the incorrect numeric value %s',
+                             self.__lineno, line_parts[1])
                 raise LavAlignmentError
         else:
-            logger.error('line {}: an incorrect score record in an'
-                         'x-stanza'.format(self.__lineno))
+            logger.error('line %d: an incorrect score record in an'
+                         'x-stanza', self.__lineno)
 
         # make sure that the stanza has the proper end
         self.__line = self.__handler.readline().rstrip()
         self.__lineno += 1
         if self.__line != '}':
-            logger.error('line {}: the x-stanza missed the proper '
-                         'ending'.format(self.__lineno))
+            logger.error('line %d: the x-stanza missed the proper '
+                         'ending', self.__lineno)
             raise LavAlignmentError
 
         return newly_masked_bases
@@ -455,7 +452,8 @@ class Lav(object):
         :rtype: int
         """
         if self.__line != 'm {':
-            logger.error('line {}: an incorrect m-stanza header')
+            logger.error('line %d: an incorrect m-stanza header',
+                         self.__lineno)
             raise LavAlignmentError
 
         # the lines containing masked regions
@@ -475,14 +473,14 @@ class Lav(object):
                             line_parts[i] = int(line_parts[i])
                         except ValueError:
                             logger.error(
-                                'line {}: the incorrect numeric '
-                                'value {}'.format(self.__lineno,
-                                                  line_parts[i]))
+                                'line %d: the incorrect numeric '
+                                'value %s', self.__lineno,
+                                line_parts[i])
                     result_regions.append(Lav.MStanzaItem(
                         start=line_parts[1], end=line_parts[2]))
                 else:
-                    logger.error('line {}: an incorrest masked '
-                                 'region line'.format(self.__lineno))
+                    logger.error('line %d: an incorrest masked '
+                                 'region line', self.__lineno)
                     raise LavAlignmentError
             elif line_parts[0] == 'n':
                 if len(line_parts) == 2:
@@ -490,21 +488,21 @@ class Lav(object):
                         result_base_count = int(line_parts[1])
                     except ValueError:
                         logger.error(
-                            'line {}: the incorrect numeric value {'
-                            '}'.format(self.__lineno, line_parts[1]))
+                            'line %d: the incorrect numeric value '
+                            '%s', self.__lineno, line_parts[1])
                         raise ValueError
                     n_flag = True
                 else:
                     logger.error(
-                        'line {}: an incorrect total masked bases '
-                        'line'.format(self.__lineno))
+                        'line %d: an incorrect total masked bases '
+                        'line', self.__lineno)
                     raise LavAlignmentError
             else:
                 # the line inside an m stanza must start from either
                 # 'x' or 'n', otherwise show the error message and
                 # throw the exception
-                logger.error('line {}: an incorrect line inside the m-'
-                             'stanza'.format(self.__lineno))
+                logger.error('line %d: an incorrect line inside the '
+                             'm-stanza', self.__lineno)
                 raise LavAlignmentError
             # read the next line
             self.__line = self.__handler.readline().rstrip()
@@ -515,8 +513,8 @@ class Lav(object):
 
         # make sure that the stanza has the proper end
         if self.__line != '}':
-            logger.error('line {}: the m-stanza missed the proper '
-                         'ending'.format(self.__lineno))
+            logger.error('line %d: the m-stanza missed the proper '
+                         'ending', self.__lineno)
             raise LavAlignmentError
 
         return result
@@ -530,8 +528,8 @@ class Lav(object):
         """
         # check the first self.__line of the stanza
         if self.__line != 'Census {':
-            logger.error('line {}: an incorrect Census-stanza '
-                         'header'.format(self.__lineno))
+            logger.error('line %d: an incorrect Census-stanza '
+                         'header', self.__lineno)
             raise LavAlignmentError
 
         # start reading the Census stanza contents
@@ -543,15 +541,14 @@ class Lav(object):
                 line_parts = [int(x) for x in line_parts]
                 if line_parts[0] != i:
                     logger.error(
-                        'line {}: the incorrect Census record number {'
-                        '}'.format(self.__lineno, i))
+                        'line %d: the incorrect Census record number '
+                        '%s', self.__lineno, i)
                     raise LavAlignmentError
                 else:
                     result.append(line_parts[1])
             except ValueError:
-                logger.error('line {}: the incorrect numeric value {'
-                             '} or {}'.format(self.__lineno,
-                                              *line_parts))
+                logger.error('line %d: the incorrect numeric value '
+                             '%s or %s', self.__lineno, *line_parts)
                 raise LavAlignmentError
             i += 1
             # read the next self.__line
