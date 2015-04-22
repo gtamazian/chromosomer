@@ -35,13 +35,17 @@ class Lav(object):
     ))
 
     GapFreeSegment = namedtuple('GapFreeSegment', (
-        'first_start', 'second_start', 'first_end', 'start_end',
+        'first_start', 'second_start', 'first_end', 'second_end',
         'identity'
     ))
 
     MStanza = namedtuple('MStanza', ('regions', 'base_count'))
 
     MStanzaItem = namedtuple('MStanzaItem', ('start', 'end'))
+
+    GapFreeAlignment = namedtuple('GapFreeAlignment', (
+        'first_seq', 'second_seq', 'first_start', 'first_end',
+        'second_start', 'second_end'))
 
     def __init__(self, filename):
         """
@@ -65,8 +69,46 @@ class Lav(object):
         :rtype: Lav.Alignment
         """
         with open(self.__filename) as self.__handler:
-            #TODO
-            pass
+            self.__line = self.__handler.readline().rstrip()
+            self.__lineno += 1
+            # first, we read the d-stanza
+            self.__parse_section_header()
+            self.__parse_d_stanza()
+            # read alignments
+            self.__line = self.__handler.readline().rstrip()
+            self.__lineno += 1
+            while self.__parse_section_header():
+                self.__parse_s_stanza()
+                h_stanza = self.__parse_h_stanza()
+                first_seq = h_stanza[0].seq_name
+                second_seq = h_stanza[1].seq_name
+                self.__line = self.__handler.readline().rstrip()
+                self.__lineno += 1
+                # read a stanza of the corresponding type according
+                # to the header that we read
+                while not self.__line.startswith('#'):
+                    if self.__line.startswith('a'):
+                        a_stanza = self.__parse_a_stanza()
+                        for segment in a_stanza.segments:
+                            assert isinstance(segment,
+                                              Lav.GapFreeSegment)
+                            gap_free_alignment = Lav.GapFreeAlignment(
+                                first_seq=first_seq,
+                                second_seq=second_seq,
+                                first_start=segment.first_start,
+                                first_end=segment.first_end,
+                                second_start=segment.second_start,
+                                second_end=segment.second_end
+                            )
+                            yield gap_free_alignment
+                    elif self.__line.startswith('x'):
+                        self.__parse_x_stanza()
+                    elif self.__line.startswith('m'):
+                        self.__parse_m_stanza()
+                    elif self.__line.startswith('Census'):
+                        self.__parse_census_stanza()
+                    self.__line = self.__handler.readline().rstrip()
+                    self.__lineno += 1
 
     def __parse_section_header(self):
         """
@@ -77,8 +119,6 @@ class Lav(object):
             corresponds to a new section
         :rtype: bool
         """
-        self.__line = self.__handler.readline().rstrip()
-        self.__lineno += 1
         if self.__line == '#:lav':
             return True
         elif self.__line == '#:eof':
@@ -272,13 +312,10 @@ class Lav(object):
         """
         Parse the a-stanza from a LAV file.
 
-        :return: a named tuple of the ФStanzaItem type representing
+        :return: a named tuple of the AStanzaItem type representing
             the a-stanza contents
-        :rtype: Lav.HStanzaItem
+        :rtype: Lav.AStanzaItem
         """
-        self.__line = self.__handler.readline().rstrip()
-        self.__lineno += 1
-
         # check the first line of the a stanza
         if self.__line != 'a {':
             logger.error('line {}: an incorrect a-stanza '
