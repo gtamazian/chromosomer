@@ -379,7 +379,18 @@ class Lav(object):
             first_end=alignment_block_first_end,
             second_start=alignment_block_second_start,
             second_end=alignment_block_second_end,
-            segments=[])
+            segments=self.__read_gap_free_segments())
+
+        return alignment_block
+
+    def __read_gap_free_segments(self):
+        """
+        Read gap-free segments of the alignment block of an a-stanza.
+
+        :return: a list of gap-free segments of an a-stanza
+        :rtype: list
+        """
+        segments = []
         # read gap-free segments of the alignment block
         self.__line = self.__handler.readline().rstrip()
         self.__lineno += 1
@@ -394,8 +405,7 @@ class Lav(object):
                             'line %d: the incorrect numeric value %s',
                             self.__lineno, line_parts[i])
                         raise LavAlignmentError
-                alignment_block.segments.append(
-                    Lav.GapFreeSegment(*line_parts[1:]))
+                segments.append(Lav.GapFreeSegment(*line_parts[1:]))
             else:
                 logger.error('line %d: the incorrect segment record '
                              'in an a-stanza', self.__lineno)
@@ -404,7 +414,7 @@ class Lav(object):
             self.__line = self.__handler.readline().rstrip()
             self.__lineno += 1
 
-        return alignment_block
+        return segments
 
     def __parse_x_stanza(self):
         """
