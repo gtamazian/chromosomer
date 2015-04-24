@@ -1,0 +1,1 @@
+fragment1	180	0	PA	+	chr1	5000	5180
