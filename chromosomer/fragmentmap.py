@@ -29,7 +29,7 @@ class FastaWriter(object):
         :type filename: str
         """
         self.__filename = filename
-        self.__width = 72
+        self.__width = width
 
     def __enter__(self):
         self.__output = open(self.__filename, 'w')
