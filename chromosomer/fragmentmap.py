@@ -6,6 +6,7 @@
 
 import logging
 import pyfaidx
+import string
 from chromosomer.exception import FragmentMapError
 from collections import defaultdict
 from collections import namedtuple
@@ -159,3 +160,39 @@ class FragmentMap(object):
                 for fragment in self.fragments(chromosome):
                     new_line = template.format(*fragment)
                     output_map_file.write(new_line)
+
+    def assebmle(self, fragment_filename, output_filename):
+        """
+        Assemble chromosome sequences from fragments.
+
+        :param fragment_filename: a name of a FASTA file of fragment
+            sequences
+        :param output_filename: a name of the output FASTA file of
+            the assembled chromosomes
+        """
+        fragment_fasta = pyfaidx.Fasta(fragment_filename)
+        complement = string.maketrans('ATCGatcgNnXx', 'TAGCtagcNnXx')
+        with FastaWriter(output_filename) as chromosome_writer:
+            for chromosome in self.chromosomes():
+                seq = []
+                for record in self.fragments(chromosome):
+                    if record.fr_name == 'GAP':
+                        record_seq = 'N' * (record.fr_end -
+                                            record.fr_start)
+                    else:
+                        if record.fr_name not in fragment_fasta:
+                            logger.error('the fragment %s sequence '
+                                         'missing', record.fr_name)
+                            raise FragmentMapError
+                        record_seq = fragment_fasta[record.fr_name][
+                            record.fr_start:record.fr_end].seq
+                        # convert the sequence to non-unicode
+                        record_seq = str(record_seq)
+                        # if the fragment orientation is reverse, then
+                        # the reverse complement of the fragment
+                        # sequence is written
+                        if record.fr_strand == '-':
+                            record_seq = record_seq.translate(
+                                complement)
+                    seq.append(record_seq)
+                chromosome_writer.write(chromosome, ''.join(seq))
