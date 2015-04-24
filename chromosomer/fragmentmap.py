@@ -21,6 +21,8 @@ class FragmentMap(object):
     writing a fragment map that describes how genome fragments are
     situated on reference genome chromosomes.
     """
+
+    numeric_values = (1, 2, 3, 6, 7)
     
     record_names = ('fr_name', 'fr_length', 'fr_start', 'fr_end',
                     'fr_strand', 'ref_chr', 'ref_start', 'ref_end')
@@ -41,8 +43,7 @@ class FragmentMap(object):
         :param new_record: a record to be added to the map
         :type new_record: FragmentMap.Record
         """
-        if new_record.ref_chr in self.__fragments:
-            self.__fragments[new_record.ref_chr].append(new_record)
+        self.__fragments[new_record.ref_chr].append(new_record)
 
     def read(self, filename):
         """
@@ -54,7 +55,15 @@ class FragmentMap(object):
         """
         with open(filename) as input_map_file:
             for line in input_map_file:
-                new_record = FragmentMap.Record(line.split('\t', 8))
+                line_parts = line.split('\t', 8)
+                for i in self.numeric_values:
+                    try:
+                        line_parts[i] = int(line_parts[i])
+                    except ValueError:
+                        logger.error('the incorrect numeric value '
+                                     '%s', line_parts[i])
+                        raise FragmentMapError
+                new_record = FragmentMap.Record(*line_parts)
                 self.add_record(new_record)
 
     def chromosomes(self):
