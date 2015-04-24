@@ -53,18 +53,21 @@ class FragmentMap(object):
         :param filename: a name of a file to read a fragment map from
         :type: str
         """
+        lineno = 0
         with open(filename) as input_map_file:
             for line in input_map_file:
+                lineno += 1
                 line_parts = line.split('\t', 8)
                 if len(line_parts) < 8:
-                    logger.error('the incorrect number of columns')
+                    logger.error('line %d: the incorrect number of '
+                                 'columns', lineno)
                     raise FragmentMapError
                 for i in self.numeric_values:
                     try:
                         line_parts[i] = int(line_parts[i])
                     except ValueError:
-                        logger.error('the incorrect numeric value '
-                                     '%s', line_parts[i])
+                        logger.error('line %d: the incorrect numeric '
+                                     'value %s', lineno, line_parts[i])
                         raise FragmentMapError
                 new_record = FragmentMap.Record(*line_parts)
                 self.add_record(new_record)
