@@ -56,6 +56,9 @@ class FragmentMap(object):
         with open(filename) as input_map_file:
             for line in input_map_file:
                 line_parts = line.split('\t', 8)
+                if len(line_parts) < 8:
+                    logger.error('the incorrect number of columns')
+                    raise FragmentMapError
                 for i in self.numeric_values:
                     try:
                         line_parts[i] = int(line_parts[i])

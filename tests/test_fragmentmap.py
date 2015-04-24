@@ -8,6 +8,7 @@ import os
 import logging
 import unittest
 from chromosomer.fragmentmap import FragmentMap
+from chromosomer.fragmentmap import FragmentMapError
 from itertools import izip
 
 path = os.path.dirname(__file__)
@@ -22,6 +23,10 @@ class TestFragmentMap(unittest.TestCase):
         self.__output_file = os.path.join(
             'data', 'fragment_map', 'fragment_map_output.txt'
         )
+        self.__incorrect_file_dir = os.path.join(
+            'data', 'fragment_map', 'incorrect_input'
+        )
+        self.__incorrect_files = os.listdir(self.__incorrect_file_dir)
         # silence the logging message
         logging.disable(logging.ERROR)
 
@@ -58,6 +63,12 @@ class TestFragmentMap(unittest.TestCase):
         self.assertEqual(fragment.ref_start, 5000)
         self.assertEqual(fragment.ref_end, 5180)
 
+        # check for incorrect input files
+        for i in self.__incorrect_files:
+            with self.assertRaises(FragmentMapError):
+                fragment_map.read(os.path.join(
+                    self.__incorrect_file_dir, i))
+
     def test_chromosomes(self):
         """
         Test the FragmentMap chromosomes iterator.
@@ -76,6 +87,10 @@ class TestFragmentMap(unittest.TestCase):
         fragments = list(fragment_map.fragments('chr1'))
         self.assertEqual(len(fragments), 1)
         self.assertIsInstance(fragments[0], FragmentMap.Record)
+
+        # check if the missing chromosome is processed correctly
+        with self.assertRaises(FragmentMapError):
+            list(fragment_map.fragments('chrN'))
 
     def test_write(self):
         """
