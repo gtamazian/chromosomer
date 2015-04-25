@@ -19,3 +19,11 @@ class FragmentMapError(Error):
     FragmentMap object.
     """
     pass
+
+
+class FragmentMapFromAlignmentsError(Error):
+    """
+    The class describes an error that may occur while creating a
+    fragment map from alignments.
+    """
+    pass
