@@ -7,7 +7,9 @@
 import logging
 import pyfaidx
 import string
+from chromosomer.alignment.blast import Blast
 from chromosomer.exception import FragmentMapError
+from chromosomer.exception import FragmentMapFromAlignmentsError
 from collections import defaultdict
 from collections import namedtuple
 from operator import attrgetter
@@ -196,3 +198,197 @@ class FragmentMap(object):
                                 complement)
                     seq.append(record_seq)
                 chromosome_writer.write(chromosome, ''.join(seq))
+
+
+class FragmentMapFromAlignments(object):
+    """
+    The class implements routines to create a fragment map from a set
+    of alignments between fragments to be assembled and reference
+    chromosomes.
+    """
+
+    Anchor = namedtuple('Anchor', ('fragment', 'fr_start', 'fr_end',
+                                   'fr_strand', 'ref_chr',
+                                   'ref_start', 'ref_end'))
+
+    def __init__(self, gap_size, fragment_lengths,
+                 min_fragment_length=None, centromeres=None):
+        """
+        Create a converter object to create fragment maps from
+        alignmets between reference chromosomes and fragments to be
+        assembled.
+
+        :param gap_size: a size of a gap between fragments
+        :param fragment_lengths: a dictionary of fragment lengths
+            which keys are their names and values are their lengths
+        :param min_fragment_length: the minimal length of a fragment
+            to be included in the map
+        :param centromeres: a dictionary of reference chromosome
+            centromere locations
+        :type gap_size: int
+        :type fragment_lengths: dict
+        :type min_fragment_length: int
+        :type centromeres: dict
+        """
+        self.__gap_size = gap_size
+        self.__fragment_lengths = fragment_lengths
+        self.__min_fragment_length = min_fragment_length
+        self.__centromeres = centromeres
+
+        self.__anchors = {}
+        self.__unlocalized = []
+        self.__unplaced = []
+        self.__fragment_map = FragmentMap()
+
+    def blast(self, blast_alignments, bitscore_ratio_threshold):
+        """
+        Create a fragment map from BLAST blast_alignments between
+        fragments and reference chromosomes.
+
+        :param blast_alignments: BLAST blast_alignments
+        :param bitscore_ratio_threshold:
+        :type blast_alignments: Blast
+        :return: the fragment map constructed from the blast_alignments
+        :rtype: FragmentMap
+        """
+        self.__anchors = {}
+        self.__unlocalized = []
+        self.__unplaced = []
+
+        temp_anchors = defaultdict(list)
+
+        for alignment in blast_alignments.alignments():
+            if self.__min_fragment_length is not None:
+                # check if the fragment length is equal or greater
+                # than the threshold value
+                try:
+                    if self.__fragment_lengths[alignment.query] < \
+                            self.__min_fragment_length:
+                        # skip the alignment
+                        continue
+                except KeyError:
+                    logger.error('the fragment %s length is missing',
+                                 alignment.query)
+                    raise FragmentMapFromAlignmentsError
+
+            # consider the centromeres if required
+            if self.__centromeres is not None and alignment.subject \
+                    in self.__centromeres:
+                # the chromosome a fragment was aligned to has a
+                # centromere, so we determine which arm the alignment
+                # refers to and modify the chromosome name by adding
+                # '_1' or '_2' to it
+                if min(alignment.s_start, alignment.s_end) < \
+                        self.__centromeres[alignment.subject].start:
+                    arm_prefix = '_1'
+                else:
+                    arm_prefix = '_2'
+                new_alignment = list(alignment)
+                new_alignment[1] += arm_prefix
+                alignment = Blast.Alignment(*new_alignment)
+
+            temp_anchors[alignment.query].append(alignment)
+            # check if there is more than 2 alignments for the
+            # fragment; if there is, then leave two fragments with
+            # the greatest bit-score values
+            if len(temp_anchors[alignment.query]) > 2:
+                temp_anchors[alignment.query] = sorted(
+                    temp_anchors[alignment.query],
+                    key=attrgetter('bit_score'),
+                    reverse=True
+                )
+                temp_anchors[alignment.query] = temp_anchors[
+                    alignment.query][0:2]
+
+        for fragment, alignments in temp_anchors.iteritems():
+            if len(alignments) > 1:
+                # check if the ratio of the alignment bit scores is
+                # greater than the required threshold to consider a
+                # fragment places
+                if alignments[0].bit_score/alignments[1].bit_score > \
+                        bitscore_ratio_threshold:
+                    self.__anchors[fragment] = \
+                        FragmentMapFromAlignments.Anchor(
+                            fragment=alignments[0].fragment,
+                            fr_start=alignments[0].fr_start - 1,
+                            fr_end=alignments[0].fr_end,
+                            fr_strand=alignments[0].fr_strand,
+                            ref_chr=alignments[0].ref_chr,
+                            ref_start=min(alignments[0].ref_start,
+                                          alignments[0].ref_end) - 1,
+                            ref_end=max(alignments[0].ref_start,
+                                        alignments[0].ref_end)
+                        )
+                elif alignments[0].subject == alignments[1].subject:
+                    # the fragment is considered unlocalized
+                    self.__unlocalized.append(
+                        (fragment, alignments[0].subject))
+                else:
+                    # the fragment is considered unplaced
+                    self.__unplaced.append(fragment)
+            else:
+                # there is a single alignment, use it as an anchor
+                self.__anchors[fragment] = \
+                    FragmentMapFromAlignments.Anchor(
+                        fragment=alignments[0].fragment,
+                        fr_start=alignments[0].fr_start - 1,
+                        fr_end=alignments[0].fr_end,
+                        fr_strand=alignments[0].fr_strand,
+                        ref_chr=alignments[0].ref_chr,
+                        ref_start=min(alignments[0].ref_start,
+                                      alignments[0].ref_end) - 1,
+                        ref_end=max(alignments[0].ref_start,
+                                    alignments[0].ref_end)
+                    )
+
+        self.__anchor_fragments()
+
+    def __anchor_fragments(self):
+        """
+        Build a fragment map from anchors.
+        """
+        # first, we split anchors by reference genome chromosomes
+        chr_anchors = defaultdict(list)
+        for anchor in self.__anchors.itervalues():
+            chr_anchors[anchor.subject].append(anchor)
+
+        # second, we sort the anchors by their position on the
+        # chromosomes
+        for chr_name in chr_anchors.iterkeys():
+            chr_anchors[chr_name] = sorted(
+                chr_anchors[chr_name],
+                key=lambda x: min(x.s_start, x.s_end)
+            )
+
+        # now we form a fragment map from the anchors
+        self.__fragment_map = FragmentMap()
+        for chr_name in chr_anchors.iterkeys():
+            for anchor in chr_anchors[chr_name]:
+                try:
+                    fragment_length = self.__anchors[anchor.query]
+                except ValueError:
+                    logger.error('the fragment %s length is missing',
+                                 anchor.query)
+                    raise FragmentMapFromAlignmentsError
+
+                # determine the fragment's start and end positions
+                if anchor.s_start < anchor.s_end:
+                    fragment_strand = '+'
+                    ref_start = anchor.ref_start - anchor.fr_start
+                    ref_end = ref_start + fragment_length
+                else:
+                    fragment_strand = '-'
+                    ref_end = anchor.ref_end + anchor.fr_start
+                    ref_start = ref_end - fragment_length
+
+                new_record = FragmentMap.Record(
+                    fr_name=anchor.query,
+                    fr_length=fragment_length,
+                    fr_start=0,
+                    fr_end=fragment_length,
+                    fr_strand=fragment_strand,
+                    ref_chr=anchor.subject,
+                    ref_start=ref_start,
+                    ref_end=ref_end
+                )
+                self.__fragment_map.add_record(new_record)
