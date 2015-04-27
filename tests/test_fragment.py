@@ -10,8 +10,8 @@ import pyfaidx
 import string
 import unittest
 from chromosomer.fastawriter import FastaWriter
-from chromosomer.fragmentmap import FragmentMap
-from chromosomer.fragmentmap import FragmentMapError
+from chromosomer.fragment import Map
+from chromosomer.fragment import MapError
 from itertools import izip
 
 path = os.path.dirname(__file__)
@@ -37,8 +37,8 @@ class TestFragmentMap(unittest.TestCase):
         """
         Check if fragment records are added correctly.
         """
-        fragment_map = FragmentMap()
-        new_record = FragmentMap.Record(
+        fragment_map = Map()
+        new_record = Map.Record(
             fr_name='fragment1',
             fr_length=180,
             fr_start=0,
@@ -52,9 +52,9 @@ class TestFragmentMap(unittest.TestCase):
 
     def test_read(self):
         """
-        Test the FragmentMap reading routine.
+        Test the Map reading routine.
         """
-        fragment_map = FragmentMap()
+        fragment_map = Map()
         fragment_map.read(self.__test_line)
         fragment = fragment_map.fragments('chr1').next()
         self.assertEqual(fragment.fr_name, 'fragment1')
@@ -68,38 +68,38 @@ class TestFragmentMap(unittest.TestCase):
 
         # check for incorrect input files
         for i in self.__incorrect_files:
-            with self.assertRaises(FragmentMapError):
+            with self.assertRaises(MapError):
                 fragment_map.read(os.path.join(
                     self.__incorrect_file_dir, i))
 
     def test_chromosomes(self):
         """
-        Test the FragmentMap chromosomes iterator.
+        Test the Map chromosomes iterator.
         """
-        fragment_map = FragmentMap()
+        fragment_map = Map()
         fragment_map.read(self.__test_line)
         chromosomes = list(fragment_map.chromosomes())
         self.assertEqual(chromosomes, ['chr1'])
 
     def test_fragments(self):
         """
-        Test the FragmentMap fragments iterator.
+        Test the Map fragments iterator.
         """
-        fragment_map = FragmentMap()
+        fragment_map = Map()
         fragment_map.read(self.__test_line)
         fragments = list(fragment_map.fragments('chr1'))
         self.assertEqual(len(fragments), 1)
-        self.assertIsInstance(fragments[0], FragmentMap.Record)
+        self.assertIsInstance(fragments[0], Map.Record)
 
         # check if the missing chromosome is processed correctly
-        with self.assertRaises(FragmentMapError):
+        with self.assertRaises(MapError):
             list(fragment_map.fragments('chrN'))
 
     def test_write(self):
         """
-        Test the FragmentMap writing routine.
+        Test the Map writing routine.
         """
-        fragment_map = FragmentMap()
+        fragment_map = Map()
         fragment_map.read(self.__test_line)
 
         output_filename = os.path.join('data', 'fragment_map',
@@ -139,7 +139,7 @@ class TestFragmentMap(unittest.TestCase):
                 chromosomes[i].append('N' * gap_size)
             chromosomes[i] = ''.join(chromosomes[i])
         # contruct a fragment map
-        fragment_map = FragmentMap()
+        fragment_map = Map()
         for i, chromosome_fragments in chromosome_content.iteritems():
             current_start = 0
             for j in chromosome_fragments:
@@ -151,7 +151,7 @@ class TestFragmentMap(unittest.TestCase):
                 ref_chr = i
                 ref_start = current_start
                 ref_end = current_start + fr_length
-                fragment_map.add_record(FragmentMap.Record(
+                fragment_map.add_record(Map.Record(
                     fr_name, fr_length, fr_start, fr_end, fr_strand,
                     ref_chr, ref_start, ref_end
                 ))
@@ -165,7 +165,7 @@ class TestFragmentMap(unittest.TestCase):
                 ref_chr = i
                 ref_start = current_start
                 ref_end = current_start + fr_end
-                fragment_map.add_record(FragmentMap.Record(
+                fragment_map.add_record(Map.Record(
                     fr_name, fr_length, fr_start, fr_end, fr_strand,
                     ref_chr, ref_start, ref_end
                 ))
@@ -191,7 +191,7 @@ class TestFragmentMap(unittest.TestCase):
 
         # try to use the fragment absent in the FASTA file of
         # fragment sequences
-        fragment_map.add_record(FragmentMap.Record(
+        fragment_map.add_record(Map.Record(
             fr_name='missing_fragment',
             fr_length=0,
             fr_start=0,
@@ -201,7 +201,7 @@ class TestFragmentMap(unittest.TestCase):
             ref_start=0,
             ref_end=0
         ))
-        with self.assertRaises(FragmentMapError):
+        with self.assertRaises(MapError):
             fragment_map.assebmle(output_fragments, output_chromosomes)
 
         os.unlink(output_chromosomes)

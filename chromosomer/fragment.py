@@ -8,8 +8,8 @@ import logging
 import pyfaidx
 import string
 from chromosomer.alignment.blast import Blast
-from chromosomer.exception import FragmentMapError
-from chromosomer.exception import FragmentMapFromAlignmentsError
+from chromosomer.exception import MapError
+from chromosomer.exception import AlignmentToMapError
 from chromosomer.fastawriter import FastaWriter
 from collections import defaultdict
 from collections import namedtuple
@@ -19,7 +19,7 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
-class FragmentMap(object):
+class Map(object):
     """
     The class implements routines related to creation, reading and
     writing a fragment map that describes how genome fragments are
@@ -35,7 +35,7 @@ class FragmentMap(object):
 
     def __init__(self):
         """
-        Initializes a FragmentMap object.
+        Initializes a Map object.
         """
         self.__fragments = defaultdict(list)
         self.__block_adding = False
@@ -45,7 +45,7 @@ class FragmentMap(object):
         Given a new fragment record, add it to the fragment map.
 
         :param new_record: a record to be added to the map
-        :type new_record: FragmentMap.Record
+        :type new_record: Map.Record
         """
         self.__fragments[new_record.ref_chr].append(new_record)
 
@@ -65,15 +65,15 @@ class FragmentMap(object):
                 if len(line_parts) < 8:
                     logger.error('line %d: the incorrect number of '
                                  'columns', lineno)
-                    raise FragmentMapError
+                    raise MapError
                 for i in self.numeric_values:
                     try:
                         line_parts[i] = int(line_parts[i])
                     except ValueError:
                         logger.error('line %d: the incorrect numeric '
                                      'value %s', lineno, line_parts[i])
-                        raise FragmentMapError
-                new_record = FragmentMap.Record(*line_parts)
+                        raise MapError
+                new_record = Map.Record(*line_parts)
                 self.add_record(new_record)
 
     def chromosomes(self):
@@ -102,7 +102,7 @@ class FragmentMap(object):
         """
         if chromosome not in self.__fragments:
             logging.error('%s missing in the fragment map', chromosome)
-            raise FragmentMapError
+            raise MapError
 
         sorted_fragments = sorted(self.__fragments[chromosome],
                                   key=attrgetter('ref_start'))
@@ -146,7 +146,7 @@ class FragmentMap(object):
                         if record.fr_name not in fragment_fasta:
                             logger.error('the fragment %s sequence '
                                          'missing', record.fr_name)
-                            raise FragmentMapError
+                            raise MapError
                         record_seq = fragment_fasta[record.fr_name][
                             record.fr_start:record.fr_end].seq
                         # convert the sequence to non-unicode
@@ -161,7 +161,7 @@ class FragmentMap(object):
                 chromosome_writer.write(chromosome, ''.join(seq))
 
 
-class FragmentMapFromAlignments(object):
+class AlignmentToMap(object):
     """
     The class implements routines to create a fragment map from a set
     of alignments between fragments to be assembled and reference
@@ -199,7 +199,7 @@ class FragmentMapFromAlignments(object):
         self.__anchors = {}
         self.__unlocalized = []
         self.__unplaced = []
-        self.__fragment_map = FragmentMap()
+        self.__fragment_map = Map()
 
     def blast(self, blast_alignments, bitscore_ratio_threshold):
         """
@@ -210,7 +210,7 @@ class FragmentMapFromAlignments(object):
         :param bitscore_ratio_threshold:
         :type blast_alignments: Blast
         :return: the fragment map constructed from the blast_alignments
-        :rtype: FragmentMap
+        :rtype: Map
         """
         self.__anchors = {}
         self.__unlocalized = []
@@ -230,7 +230,7 @@ class FragmentMapFromAlignments(object):
                 except KeyError:
                     logger.error('the fragment %s length is missing',
                                  alignment.query)
-                    raise FragmentMapFromAlignmentsError
+                    raise AlignmentToMapError
 
             # consider the centromeres if required
             if self.__centromeres is not None and alignment.subject \
@@ -269,7 +269,7 @@ class FragmentMapFromAlignments(object):
                 if alignments[0].bit_score/alignments[1].bit_score > \
                         bitscore_ratio_threshold:
                     self.__anchors[fragment] = \
-                        FragmentMapFromAlignments.Anchor(
+                        AlignmentToMap.Anchor(
                             fragment=alignments[0].fragment,
                             fr_start=alignments[0].fr_start - 1,
                             fr_end=alignments[0].fr_end,
@@ -290,7 +290,7 @@ class FragmentMapFromAlignments(object):
             else:
                 # there is a single alignment, use it as an anchor
                 self.__anchors[fragment] = \
-                    FragmentMapFromAlignments.Anchor(
+                    AlignmentToMap.Anchor(
                         fragment=alignments[0].fragment,
                         fr_start=alignments[0].fr_start - 1,
                         fr_end=alignments[0].fr_end,
@@ -322,7 +322,7 @@ class FragmentMapFromAlignments(object):
             )
 
         # now we form a fragment map from the anchors
-        self.__fragment_map = FragmentMap()
+        self.__fragment_map = Map()
         for chr_name in chr_anchors.iterkeys():
             for anchor in chr_anchors[chr_name]:
                 try:
@@ -330,7 +330,7 @@ class FragmentMapFromAlignments(object):
                 except ValueError:
                     logger.error('the fragment %s length is missing',
                                  anchor.query)
-                    raise FragmentMapFromAlignmentsError
+                    raise AlignmentToMapError
 
                 # determine the fragment's start and end positions
                 if anchor.s_start < anchor.s_end:
@@ -342,7 +342,7 @@ class FragmentMapFromAlignments(object):
                     ref_end = anchor.ref_end + anchor.fr_start
                     ref_start = ref_end - fragment_length
 
-                new_record = FragmentMap.Record(
+                new_record = Map.Record(
                     fr_name=anchor.query,
                     fr_length=fragment_length,
                     fr_start=0,

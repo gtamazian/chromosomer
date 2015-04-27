@@ -7,7 +7,7 @@
 import os
 import pyfaidx
 import unittest
-from chromosomer.fragmentmap import FastaWriter
+from chromosomer.fastawriter import FastaWriter
 
 path = os.path.dirname(__file__)
 os.chdir(path)
