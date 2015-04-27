@@ -5,7 +5,7 @@
 # gaik (dot) tamazian (at) gmail (dot) com
 
 
-class FastaWriter(object):
+class Writer(object):
     """
     The class implements routines to write sequences in the FASTA
     format.
@@ -13,7 +13,7 @@ class FastaWriter(object):
 
     def __init__(self, filename, width=72):
         """
-        Create a FastaWriter object to write sequences in a FASTA file.
+        Create a Writer object to write sequences in a FASTA file.
 
         :param filename: a name of a file to write sequences to
         :type filename: str

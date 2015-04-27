@@ -7,13 +7,13 @@
 import os
 import pyfaidx
 import unittest
-from chromosomer.fastawriter import FastaWriter
+from chromosomer.fasta import Writer
 
 path = os.path.dirname(__file__)
 os.chdir(path)
 
 
-class TestFastaWriter(unittest.TestCase):
+class TestWriter(unittest.TestCase):
     def setUp(self):
         self.__test_dir = os.path.join('data')
 
@@ -29,7 +29,7 @@ class TestFastaWriter(unittest.TestCase):
         for i, pattern in enumerate(fasta_patterns):
             sequences['chr{}'.format(i)] = pattern * 100
 
-        with FastaWriter(output_file) as output_fasta:
+        with Writer(output_file) as output_fasta:
             for header, sequence in sequences.iteritems():
                 output_fasta.write(header, sequence)
 
@@ -41,5 +41,5 @@ class TestFastaWriter(unittest.TestCase):
         os.unlink(output_file)
         os.unlink(output_file + '.fai')
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestFastaWriter)
+suite = unittest.TestLoader().loadTestsFromTestCase(TestWriter)
 unittest.TextTestRunner(verbosity=2).run(suite)

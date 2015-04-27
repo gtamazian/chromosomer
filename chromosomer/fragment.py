@@ -10,7 +10,7 @@ import string
 from chromosomer.alignment.blast import Blast
 from chromosomer.exception import MapError
 from chromosomer.exception import AlignmentToMapError
-from chromosomer.fastawriter import FastaWriter
+from chromosomer.fasta import Writer
 from collections import defaultdict
 from collections import namedtuple
 from operator import attrgetter
@@ -135,7 +135,7 @@ class Map(object):
         """
         fragment_fasta = pyfaidx.Fasta(fragment_filename)
         complement = string.maketrans('ATCGatcgNnXx', 'TAGCtagcNnXx')
-        with FastaWriter(output_filename) as chromosome_writer:
+        with Writer(output_filename) as chromosome_writer:
             for chromosome in self.chromosomes():
                 seq = []
                 for record in self.fragments(chromosome):

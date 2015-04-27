@@ -9,7 +9,7 @@ import logging
 import pyfaidx
 import string
 import unittest
-from chromosomer.fastawriter import FastaWriter
+from chromosomer.fasta import Writer
 from chromosomer.fragment import Map
 from chromosomer.fragment import MapError
 from itertools import izip
@@ -177,7 +177,7 @@ class TestFragmentMap(unittest.TestCase):
                                         'temp_fragments.txt')
 
         # write the fragment sequences to a FASTA file
-        with FastaWriter(output_fragments) as writer:
+        with Writer(output_fragments) as writer:
             for i, j in fragments.iteritems():
                 writer.write(i, j)
 
