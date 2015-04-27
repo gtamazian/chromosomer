@@ -9,7 +9,7 @@ import logging
 import pyfaidx
 import string
 import unittest
-from chromosomer.fragmentmap import FastaWriter
+from chromosomer.fastawriter import FastaWriter
 from chromosomer.fragmentmap import FragmentMap
 from chromosomer.fragmentmap import FragmentMapError
 from itertools import izip
