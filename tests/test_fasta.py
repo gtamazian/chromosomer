@@ -7,6 +7,7 @@
 import os
 import pyfaidx
 import unittest
+from chromosomer.fasta import RandomSequence
 from chromosomer.fasta import Writer
 
 path = os.path.dirname(__file__)
@@ -41,5 +42,19 @@ class TestWriter(unittest.TestCase):
         os.unlink(output_file)
         os.unlink(output_file + '.fai')
 
+
+class TestRandomSequence(unittest.TestCase):
+    def test_get(self):
+        """
+        Check if a random sequence is generated.
+        """
+        seq_generator = RandomSequence(10)
+        sequence = seq_generator.get()
+        self.assertEqual(len(sequence), 10)
+        self.assertIsInstance(sequence, str)
+
 suite = unittest.TestLoader().loadTestsFromTestCase(TestWriter)
+unittest.TextTestRunner(verbosity=2).run(suite)
+
+suite = unittest.TestLoader().loadTestsFromTestCase(TestRandomSequence)
 unittest.TextTestRunner(verbosity=2).run(suite)

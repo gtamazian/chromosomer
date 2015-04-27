@@ -4,6 +4,8 @@
 # Copyright (C) 2015 by Gaik Tamazian
 # gaik (dot) tamazian (at) gmail (dot) com
 
+import random
+
 
 class Writer(object):
     """
@@ -43,3 +45,34 @@ class Writer(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.__output.close()
+
+
+class RandomSequence(object):
+    """
+    The class implements routines to create random nucleotide
+    sequences.
+    """
+
+    def __init__(self, length):
+        """
+        Create an object to generate random nucleotide sequences of
+        the specified length.
+
+        :param length: a sequence length
+        :type length: int
+        """
+        self.__length = length
+
+    def get(self):
+        """
+        Get a random nucleotide sequence.
+
+        :return: a random nucleotide sequence
+        :rtype: str
+        """
+        result = []
+        nucleotides = ('A', 'C', 'G', 'T')
+        for i in xrange(self.__length):
+            result.append(random.choice(nucleotides))
+
+        return ''.join(result)
