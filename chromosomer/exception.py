@@ -13,9 +13,17 @@ class Error(Exception):
     pass
 
 
-class FragmentMapError(Error):
+class MapError(Error):
     """
     The class describes an error that may occur while working with a
-    FragmentMap object.
+    fragment map object.
+    """
+    pass
+
+
+class AlignmentToMapError(Error):
+    """
+    The class describes an error that may occur while creating a
+    fragment map from alignments.
     """
     pass
