@@ -8,10 +8,12 @@ import os
 import logging
 import pyfaidx
 import string
+import tempfile
 import unittest
 from chromosomer.fasta import Writer
 from chromosomer.fragment import Map
 from chromosomer.fragment import MapError
+from chromosomer.fragment import Simulator
 from itertools import izip
 
 path = os.path.dirname(__file__)
@@ -138,7 +140,7 @@ class TestFragmentMap(unittest.TestCase):
                     chromosomes[i].append(fr_seq)
                 chromosomes[i].append('N' * gap_size)
             chromosomes[i] = ''.join(chromosomes[i])
-        # contruct a fragment map
+        # contruct a fragment __map
         fragment_map = Map()
         for i, chromosome_fragments in chromosome_content.iteritems():
             current_start = 0
@@ -210,5 +212,52 @@ class TestFragmentMap(unittest.TestCase):
         os.unlink(output_fragments + '.fai')
 
 
+class TestFragmentSimulator(unittest.TestCase):
+    def setUp(self):
+        self.__fragment_number = 10
+        self.__chromosome_number = 2
+        self.__fragment_length = 10
+        self.__gap_size = 5
+
+        self.__simulator = Simulator(self.__fragment_length,
+                                     self.__fragment_number,
+                                     self.__chromosome_number,
+                                     self.__gap_size)
+
+    def test_write(self):
+        """
+        The the writing method of the fragment simulator.
+        """
+        self.__fragments = tempfile.mkstemp()[1]
+        self.__chromosomes = tempfile.mkstemp()[1]
+        self.__map = tempfile.mkstemp()[1]
+
+        self.__simulator.write(self.__map, self.__fragments,
+                               self.__chromosomes)
+
+        # check if the correct number of fragment and chromosome
+        # sequences was written
+        fragment_fasta = pyfaidx.Fasta(self.__fragments)
+        self.assertEqual(len(fragment_fasta.keys()),
+                         self.__fragment_number)
+        chromosome_fasta = pyfaidx.Fasta(self.__chromosomes)
+        self.assertEqual(len(chromosome_fasta.keys()),
+                         self.__chromosome_number)
+
+        # check if a correct fragment map was written
+        test_map = Map()
+        test_map.read(self.__map)
+
+        os.unlink(self.__fragments)
+        os.unlink(self.__fragments + '.fai')
+        os.unlink(self.__chromosomes)
+        os.unlink(self.__chromosomes + '.fai')
+        os.unlink(self.__map)
+
+
 suite = unittest.TestLoader().loadTestsFromTestCase(TestFragmentMap)
+unittest.TextTestRunner(verbosity=2).run(suite)
+
+suite = unittest.TestLoader().loadTestsFromTestCase(
+    TestFragmentSimulator)
 unittest.TextTestRunner(verbosity=2).run(suite)
