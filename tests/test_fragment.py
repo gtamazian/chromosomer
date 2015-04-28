@@ -10,7 +10,9 @@ import pyfaidx
 import string
 import tempfile
 import unittest
+from chromosomer.fasta import RandomSequence
 from chromosomer.fasta import Writer
+from chromosomer.fragment import Length
 from chromosomer.fragment import Map
 from chromosomer.fragment import MapError
 from chromosomer.fragment import Simulator
@@ -212,6 +214,31 @@ class TestFragmentMap(unittest.TestCase):
         os.unlink(output_fragments + '.fai')
 
 
+class TestFragmentLength(unittest.TestCase):
+    def setUp(self):
+        self.__fragment_number = 10
+        self.__fragment_length = 10
+        self.__fasta_temp = tempfile.mkstemp()[1]
+
+        # create a FASTA file of random sequences
+        with Writer(self.__fasta_temp) as fasta_writer:
+            seq_generator = RandomSequence(self.__fragment_length)
+            for i in xrange(self.__fragment_length):
+                fasta_writer.write('seq{}'.format(i+1),
+                                   seq_generator.get())
+
+    def test_lengths(self):
+        """
+        Test the lengths method.
+        """
+        x = Length(self.__fasta_temp)
+        lengths = x.lengths()
+        for i in lengths.itervalues():
+            self.assertEqual(i, self.__fragment_length)
+
+    def tearDown(self):
+        os.unlink(self.__fasta_temp)
+
 class TestFragmentSimulator(unittest.TestCase):
     def setUp(self):
         self.__fragment_number = 10
@@ -254,6 +281,9 @@ class TestFragmentSimulator(unittest.TestCase):
         os.unlink(self.__chromosomes + '.fai')
         os.unlink(self.__map)
 
+
+suite = unittest.TestLoader().loadTestsFromTestCase(TestFragmentLength)
+unittest.TextTestRunner(verbosity=2).run(suite)
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestFragmentMap)
 unittest.TextTestRunner(verbosity=2).run(suite)

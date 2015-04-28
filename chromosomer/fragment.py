@@ -470,3 +470,35 @@ class Simulator(object):
         with Writer(chromosome_file) as chromosome_fasta:
             for i, seq in enumerate(self.__chromosomes):
                 chromosome_fasta.write('chr{}'.format(i+1), seq)
+
+
+class Length(object):
+    """
+    The class implements routines to handle fragment sequence lengths.
+    """
+    def __init__(self, filename):
+        """
+        Create a Length object to handle sequence lengths of the
+        specified FASTA file.
+
+        :param filename: a name of a FASTA file with sequences which
+            lengths are to be derived
+        :type filename: str
+        """
+        self.__filename = filename
+        self.__lengths = {}
+
+    def lengths(self):
+        """
+        Return a dictionary of sequence lengths.
+
+        :return: a dictionary which keys are sequence names and
+            values are their lengths
+        :rtype: dict
+        """
+        if not self.__lengths:
+            reader = pyfaidx.Fasta(self.__filename)
+            for seq in reader.keys():
+                self.__lengths[seq] = len(reader[seq])
+
+        return self.__lengths
