@@ -6,11 +6,13 @@
 
 import logging
 import pyfaidx
+import random
 import string
 from chromosomer.alignment.blast import Blast
 from chromosomer.exception import MapError
 from chromosomer.exception import AlignmentToMapError
-from chromosomer.fastawriter import FastaWriter
+from chromosomer.fasta import RandomSequence
+from chromosomer.fasta import Writer
 from collections import defaultdict
 from collections import namedtuple
 from operator import attrgetter
@@ -135,7 +137,7 @@ class Map(object):
         """
         fragment_fasta = pyfaidx.Fasta(fragment_filename)
         complement = string.maketrans('ATCGatcgNnXx', 'TAGCtagcNnXx')
-        with FastaWriter(output_filename) as chromosome_writer:
+        with Writer(output_filename) as chromosome_writer:
             for chromosome in self.chromosomes():
                 seq = []
                 for record in self.fragments(chromosome):
@@ -353,3 +355,150 @@ class AlignmentToMap(object):
                     ref_end=ref_end
                 )
                 self.__fragment_map.add_record(new_record)
+
+
+class Simulator(object):
+    """
+    The class describes routines to simulate genome fragments and
+    chromosomes that are composed from them.
+    """
+    def __init__(self, fragment_length, fragment_number,
+                 chromosome_number, gap_size):
+        """
+        Create a fragment simulator object.
+
+        :param fragment_length: the length of a fragment
+        :param fragment_number: the number of fragments constituting
+            the chromosomes
+        :param chromosome_number: the number of chromosomes
+        :param gap_size: the length of gaps between fragments in
+            chromosomes
+        :type fragment_length: int
+        :type fragment_number: int
+        :type chromosome_number: int
+        :type gap_size: int
+        """
+        self.__fragment_length = fragment_length
+        self.__fragment_number = fragment_number
+        self.__chromosome_number = chromosome_number
+        self.__gap_size = gap_size
+
+        # create fragment sequences
+        self.__fragments = {}
+        seq_generator = RandomSequence(self.__fragment_length)
+        for i in xrange(self.__fragment_number):
+            fr_name = 'fragment{}'.format(i+1)
+            self.__fragments[fr_name] = seq_generator.get()
+
+        self.__map = Map()
+        self.__create_map()
+        self.__assemble_chromosomes()
+
+    def __create_map(self):
+        """
+        Assign fragments to chromosomes randomly and create a
+        fragment map.
+        """
+        fragment_positions = [0] * self.__chromosome_number
+        for i in xrange(self.__fragment_number):
+            chr_num = random.randrange(self.__chromosome_number)
+            fr_strand = random.choice(('+', '-'))
+            self.__map.add_record(Map.Record(
+                fr_name='fragment{}'.format(i+1),
+                fr_length=self.__fragment_length,
+                fr_start=0,
+                fr_end=self.__fragment_length,
+                fr_strand=fr_strand,
+                ref_chr='chr{}'.format(chr_num+1),
+                ref_start=fragment_positions[chr_num],
+                ref_end=fragment_positions[chr_num] +
+                self.__fragment_length
+            ))
+            fragment_positions[chr_num] += self.__gap_size
+            self.__map.add_record(Map.Record(
+                fr_name='GAP',
+                fr_length=self.__gap_size,
+                fr_start=0,
+                fr_end=self.__gap_size,
+                fr_strand='+',
+                ref_chr='chr{}'.format(chr_num+1),
+                ref_start=fragment_positions[chr_num],
+                ref_end=fragment_positions[chr_num] + self.__gap_size
+            ))
+            fragment_positions[chr_num] += self.__gap_size
+
+    def __assemble_chromosomes(self):
+        """
+        Get chromosome sequences from fragments using the constructed
+        fragment map.
+        """
+        complement = string.maketrans('ATCGatcgNnXx', 'TAGCtagcNnXx')
+        chromosomes = defaultdict(list)
+        for i in self.__map.chromosomes():
+            for fr in self.__map.fragments(i):
+                if fr.fr_name == 'GAP':
+                    temp_fragment = 'N' * fr.fr_length
+                else:
+                    temp_fragment = self.__fragments[fr.fr_name]
+                    if fr.fr_strand == '-':
+                        temp_fragment = temp_fragment.translate(
+                            complement)
+                chromosomes[i].append(temp_fragment)
+            chromosomes[i] = ''.join(chromosomes[i])
+
+        self.__chromosomes = chromosomes
+
+    def write(self, map_file, fragment_file, chromosome_file):
+        """
+        Write the produced data - a fragment map, a FASTA file of
+        fragments and a FASTA file of chromosomes - to the specified
+        files.
+
+        :param map_file: a name of a file to write the fragment map to
+        :param fragment_file: a name of a file to write fragment
+            sequences to
+        :param chromosome_file: a name of a file to write chromosome
+            sequences to
+        :type map_file: str
+        :type fragment_file: str
+        :type chromosome_file: str
+        """
+        self.__map.write(map_file)
+        with Writer(fragment_file) as fragment_fasta:
+            for i, seq in enumerate(self.__fragments):
+                fragment_fasta.write('fragment{}'.format(i+1), seq)
+        with Writer(chromosome_file) as chromosome_fasta:
+            for i, seq in enumerate(self.__chromosomes):
+                chromosome_fasta.write('chr{}'.format(i+1), seq)
+
+
+class Length(object):
+    """
+    The class implements routines to handle fragment sequence lengths.
+    """
+    def __init__(self, filename):
+        """
+        Create a Length object to handle sequence lengths of the
+        specified FASTA file.
+
+        :param filename: a name of a FASTA file with sequences which
+            lengths are to be derived
+        :type filename: str
+        """
+        self.__filename = filename
+        self.__lengths = {}
+
+    def lengths(self):
+        """
+        Return a dictionary of sequence lengths.
+
+        :return: a dictionary which keys are sequence names and
+            values are their lengths
+        :rtype: dict
+        """
+        if not self.__lengths:
+            reader = pyfaidx.Fasta(self.__filename)
+            for seq in reader.keys():
+                self.__lengths[seq] = len(reader[seq])
+
+        return self.__lengths

@@ -16,7 +16,7 @@ class Error(Exception):
 class MapError(Error):
     """
     The class describes an error that may occur while working with a
-    fragment map object.
+    fragment __map object.
     """
     pass
 
@@ -24,6 +24,6 @@ class MapError(Error):
 class AlignmentToMapError(Error):
     """
     The class describes an error that may occur while creating a
-    fragment map from alignments.
+    fragment __map from alignments.
     """
     pass
