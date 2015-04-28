@@ -12,6 +12,38 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
+class MakeBlastDb(object):
+    """
+    The class implements a wrapper to launch makeblastdb from the
+    NCBI BLAST+ package.
+    """
+
+    def __init__(self, fasta, out_name=None):
+        """
+        Create a BLAST database from the specified FASTA file.
+
+        :param fasta: a name of a FASTA file of sequences to create a
+            BLAST database from
+        :param out_name: the output BLAST database name
+        :type fasta: str
+        :type out_name: str
+        """
+        self.__fasta = fasta
+        self.__out_name = out_name
+
+    def launch(self):
+        """
+        Launch blastn with the specified parameters.
+        """
+        options = ['makeblastdb', '-in', self.__fasta, '-dbtype',
+                   'nucl']
+
+        if self.__out_name is not None:
+            options += ['-out', self.__out_name]
+
+        subprocess.check_call(options)
+
+
 class BlastN(object):
     """
     The class implements a wrapper to launch blastn from the NCBI
