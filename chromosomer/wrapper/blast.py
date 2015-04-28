@@ -33,7 +33,7 @@ class MakeBlastDb(object):
 
     def launch(self):
         """
-        Launch blastn with the specified parameters.
+        Launch makeblastn with the specified parameters.
         """
         options = ['makeblastdb', '-in', self.__fasta, '-dbtype',
                    'nucl']
@@ -93,7 +93,8 @@ class BlastN(object):
         Launch blastn with the specified parameters.
         """
         options = ['blastn', '-query', self.__query, '-db',
-                   self.__database, '-out', self.__output] + list(
-            chain.from_iterable(self.__parameters.iteritems()))
+                   self.__database, '-out', self.__output] + \
+                  map(str, list(chain.from_iterable(
+                      self.__parameters.iteritems())))
 
         subprocess.check_call(options)

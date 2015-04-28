@@ -22,9 +22,11 @@ class TestWrapperMakeBlastDb(unittest.TestCase):
         self.__fasta = tempfile.mkstemp()[1]
         self.__seq_length = 100
         self.__seq_number = 10
+        self.__dbname = os.path.join(
+            os.path.split(self.__fasta)[0], 'test')
 
     def tearDown(self):
-        temp_files = glob.glob('{}*'.format(self.__fasta))
+        temp_files = glob.glob('{}*'.format(self.__dbname))
         for i in temp_files:
             os.unlink(i)
 
@@ -38,7 +40,7 @@ class TestWrapperMakeBlastDb(unittest.TestCase):
                 fasta_writer.write('seq{}'.format(i+1),
                                    seq_generator.get())
 
-        wrapper = MakeBlastDb(self.__fasta)
+        wrapper = MakeBlastDb(self.__fasta, self.__dbname)
         wrapper.launch()
 
 
@@ -71,6 +73,8 @@ class TestWrapperBlastN(unittest.TestCase):
         Test the blastn testing routine.
         """
         wrapper = BlastN(self.__fasta, self.__fasta, self.__output)
+        wrapper.set('-outfmt', 6)
+        wrapper.get('-outfmt')
         wrapper.launch()
 
 suite = unittest.TestLoader().loadTestsFromTestCase(
