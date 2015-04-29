@@ -191,7 +191,7 @@ class TestFragmentMap(unittest.TestCase):
             for i, j in fragments.iteritems():
                 writer.write(i, j)
 
-        fragment_map.assebmle(output_fragments, output_chromosomes)
+        fragment_map.assemble(output_fragments, output_chromosomes)
 
         # read fragments from the written FASTA file and compare them
         # to the original ones
@@ -212,7 +212,7 @@ class TestFragmentMap(unittest.TestCase):
             ref_end=0
         ))
         with self.assertRaises(MapError):
-            fragment_map.assebmle(output_fragments, output_chromosomes)
+            fragment_map.assemble(output_fragments, output_chromosomes)
 
         os.unlink(output_chromosomes)
         os.unlink(output_chromosomes + '.fai')

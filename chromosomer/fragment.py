@@ -126,7 +126,7 @@ class Map(object):
                     new_line = template.format(*fragment)
                     output_map_file.write(new_line)
 
-    def assebmle(self, fragment_filename, output_filename):
+    def assemble(self, fragment_filename, output_filename):
         """
         Assemble chromosome sequences from fragments.
 
