@@ -465,11 +465,11 @@ class Simulator(object):
         """
         self.__map.write(map_file)
         with Writer(fragment_file) as fragment_fasta:
-            for i, seq in enumerate(self.__fragments):
-                fragment_fasta.write('fragment{}'.format(i+1), seq)
+            for name, seq in self.__fragments.iteritems():
+                fragment_fasta.write(name, seq)
         with Writer(chromosome_file) as chromosome_fasta:
-            for i, seq in enumerate(self.__chromosomes):
-                chromosome_fasta.write('chr{}'.format(i+1), seq)
+            for name, seq in self.__chromosomes.iteritems():
+                chromosome_fasta.write(name, seq)
 
 
 class Length(object):
