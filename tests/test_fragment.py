@@ -5,17 +5,22 @@
 # gaik (dot) tamazian (at) gmail (dot) com
 
 import os
+import glob
 import logging
 import pyfaidx
 import string
 import tempfile
 import unittest
+from chromosomer.alignment.blast import Blast
 from chromosomer.fasta import RandomSequence
 from chromosomer.fasta import Writer
+from chromosomer.fragment import AlignmentToMap
 from chromosomer.fragment import Length
 from chromosomer.fragment import Map
 from chromosomer.fragment import MapError
 from chromosomer.fragment import Simulator
+from chromosomer.wrapper.blast import BlastN
+from chromosomer.wrapper.blast import MakeBlastDb
 from itertools import izip
 
 path = os.path.dirname(__file__)
@@ -240,6 +245,7 @@ class TestFragmentLength(unittest.TestCase):
     def tearDown(self):
         os.unlink(self.__fasta_temp)
 
+
 class TestFragmentSimulator(unittest.TestCase):
     def setUp(self):
         self.__fragment_number = 10
@@ -282,6 +288,72 @@ class TestFragmentSimulator(unittest.TestCase):
         os.unlink(self.__chromosomes + '.fai')
         os.unlink(self.__map)
 
+
+class TestFragmentAlignmentToMap(unittest.TestCase):
+    def setUp(self):
+        # simulate fragments and chromosomes
+        self.__fragment_number = 10
+        self.__chromosome_number = 2
+        self.__fragment_length = 100
+        self.__gap_size = 5
+
+        self.__simulator = Simulator(self.__fragment_length,
+                                     self.__fragment_number,
+                                     self.__chromosome_number,
+                                     self.__gap_size)
+
+        # create the corresponding files
+        self.__map_file = tempfile.mkstemp()[1]
+        self.__fragment_file = tempfile.mkstemp()[1]
+        self.__chromosome_file = tempfile.mkstemp()[1]
+
+        self.__simulator.write(self.__map_file, self.__fragment_file,
+                               self.__chromosome_file)
+
+        # create the chromosome sequence database and align the
+        # fragments to it
+        makeblastdb_wrapper = MakeBlastDb(self.__chromosome_file)
+        makeblastdb_wrapper.launch()
+
+        self.__alignment_file = tempfile.mkstemp()[1]
+        blastn_wrapper = BlastN(self.__fragment_file,
+                                self.__chromosome_file,
+                                self.__alignment_file)
+        blastn_wrapper.set('-outfmt', 6)
+        blastn_wrapper.set('-dust', 'no')
+        blastn_wrapper.launch()
+
+    def test_blast(self):
+        """
+        Test the blast method which utilizes BLASTN alignments to
+        construct a fragment map.
+        """
+        fragment_lengths = Length(self.__fragment_file)
+        map_creator = AlignmentToMap(self.__gap_size,
+                                     fragment_lengths.lengths())
+        blast_alignments = Blast(self.__alignment_file)
+        new_map = map_creator.blast(blast_alignments, 1.2)
+        orig_map = Map()
+        orig_map.read(self.__map_file)
+
+        # compare the obtained fragment map with the original one
+        for chromosome in orig_map.chromosomes():
+            for orig, new in izip(orig_map.fragments(chromosome),
+                                  new_map.fragments(chromosome)):
+                self.assertEqual(orig, new)
+
+    def tearDown(self):
+        os.unlink(self.__map_file)
+        os.unlink(self.__fragment_file)
+        os.unlink(self.__chromosome_file)
+        os.unlink(self.__alignment_file)
+        for i in glob.glob('{}*'.format(self.__chromosome_file)):
+            os.unlink(i)
+
+
+suite = unittest.TestLoader().loadTestsFromTestCase(
+    TestFragmentAlignmentToMap)
+unittest.TextTestRunner(verbosity=2).run(suite)
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestFragmentLength)
 unittest.TextTestRunner(verbosity=2).run(suite)
