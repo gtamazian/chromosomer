@@ -94,7 +94,7 @@ class BlastN(object):
         """
         options = ['blastn', '-query', self.__query, '-db',
                    self.__database, '-out', self.__output] + \
-                  map(str, list(chain.from_iterable(
-                      self.__parameters.iteritems())))
+            map(str, list(chain.from_iterable(
+                self.__parameters.iteritems())))
 
         subprocess.check_call(options)
