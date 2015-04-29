@@ -381,7 +381,7 @@ class Simulator(object):
     chromosomes that are composed from them.
     """
     def __init__(self, fragment_length, fragment_number,
-                 chromosome_number, gap_size):
+                 chromosome_number, unplaced_number, gap_size):
         """
         Create a fragment simulator object.
 
@@ -389,11 +389,14 @@ class Simulator(object):
         :param fragment_number: the number of fragments constituting
             the chromosomes
         :param chromosome_number: the number of chromosomes
+        :param unplaced_number: the number of fragments not included
+            in the chromosomes
         :param gap_size: the length of gaps between fragments in
             chromosomes
         :type fragment_length: int
         :type fragment_number: int
         :type chromosome_number: int
+        :type unplaced_number: int
         :type gap_size: int
         """
         self.__fragment_length = fragment_length
@@ -411,6 +414,12 @@ class Simulator(object):
         self.__map = Map()
         self.__create_map()
         self.__assemble_chromosomes()
+
+        # add unplaced fragments
+        for i in xrange(self.__fragment_number,
+                        self.__fragment_number + unplaced_number):
+            fr_name = 'fragment{}'.format(i+1)
+            self.__fragments[fr_name] = seq_generator.get()
 
     def __create_map(self):
         """

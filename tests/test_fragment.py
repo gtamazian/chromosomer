@@ -252,11 +252,13 @@ class TestFragmentSimulator(unittest.TestCase):
         self.__fragment_number = 10
         self.__chromosome_number = 2
         self.__fragment_length = 10
+        self.__unplaced_number = 2
         self.__gap_size = 5
 
         self.__simulator = Simulator(self.__fragment_length,
                                      self.__fragment_number,
                                      self.__chromosome_number,
+                                     self.__unplaced_number,
                                      self.__gap_size)
 
     def test_write(self):
@@ -274,7 +276,8 @@ class TestFragmentSimulator(unittest.TestCase):
         # sequences was written
         fragment_fasta = pyfaidx.Fasta(self.__fragments)
         self.assertEqual(len(fragment_fasta.keys()),
-                         self.__fragment_number)
+                         self.__fragment_number +
+                         self.__unplaced_number)
         chromosome_fasta = pyfaidx.Fasta(self.__chromosomes)
         self.assertEqual(len(chromosome_fasta.keys()),
                          self.__chromosome_number)
@@ -296,11 +299,13 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
         self.__fragment_number = 10
         self.__chromosome_number = 2
         self.__fragment_length = 100
+        self.__unplaced_number = 5
         self.__gap_size = 5
 
         self.__simulator = Simulator(self.__fragment_length,
                                      self.__fragment_number,
                                      self.__chromosome_number,
+                                     self.__unplaced_number,
                                      self.__gap_size)
 
         # create the corresponding files
@@ -346,12 +351,12 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
         # now test againt the situation when a fragment which length
         # is missing is added to the alignments
         incomplete_lengths = fragment_lengths.lengths()
-        del incomplete_lengths[incomplete_lengths.keys()[0]]
+        del incomplete_lengths[sorted(incomplete_lengths.keys())[0]]
         map_creator = AlignmentToMap(self.__gap_size,
-                                     fragment_lengths.lengths())
+                                     fragment_lengths.lengths(),
+                                     min_fragment_length=50)
         with self.assertRaises(AlignmentToMapError):
             map_creator.blast(blast_alignments, 1.2)
-
 
     def tearDown(self):
         os.unlink(self.__map_file)
