@@ -157,7 +157,7 @@ class Map(object):
                         # the reverse complement of the fragment
                         # sequence is written
                         if record.fr_strand == '-':
-                            record_seq = record_seq.translate(
+                            record_seq = record_seq[::-1].translate(
                                 complement)
                     seq.append(record_seq)
                 chromosome_writer.write(chromosome, ''.join(seq))
@@ -306,6 +306,8 @@ class AlignmentToMap(object):
 
         self.__anchor_fragments()
 
+        return self.__fragment_map
+
     def __anchor_fragments(self):
         """
         Build a fragment map from anchors.
@@ -441,7 +443,7 @@ class Simulator(object):
                 else:
                     temp_fragment = self.__fragments[fr.fr_name]
                     if fr.fr_strand == '-':
-                        temp_fragment = temp_fragment.translate(
+                        temp_fragment = temp_fragment[::-1].translate(
                             complement)
                 chromosomes[i].append(temp_fragment)
             chromosomes[i] = ''.join(chromosomes[i])

@@ -137,7 +137,8 @@ class TestFragmentMap(unittest.TestCase):
             for j in chromosome_fragments:
                 fr_seq = fragments['fragment{}'.format(abs(j))]
                 if j < 0:
-                    chromosomes[i].append(fr_seq.translate(complement))
+                    chromosomes[i].append(fr_seq[::-1].translate(
+                        complement))
                 else:
                     chromosomes[i].append(fr_seq)
                 chromosomes[i].append('N' * gap_size)
