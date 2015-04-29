@@ -15,6 +15,7 @@ from chromosomer.alignment.blast import Blast
 from chromosomer.fasta import RandomSequence
 from chromosomer.fasta import Writer
 from chromosomer.fragment import AlignmentToMap
+from chromosomer.fragment import AlignmentToMapError
 from chromosomer.fragment import Length
 from chromosomer.fragment import Map
 from chromosomer.fragment import MapError
@@ -341,6 +342,16 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
             for orig, new in izip(orig_map.fragments(chromosome),
                                   new_map.fragments(chromosome)):
                 self.assertEqual(orig, new)
+
+        # now test againt the situation when a fragment which length
+        # is missing is added to the alignments
+        incomplete_lengths = fragment_lengths.lengths()
+        del incomplete_lengths[incomplete_lengths.keys()[0]]
+        map_creator = AlignmentToMap(self.__gap_size,
+                                     fragment_lengths.lengths())
+        with self.assertRaises(AlignmentToMapError):
+            map_creator.blast(blast_alignments, 1.2)
+
 
     def tearDown(self):
         os.unlink(self.__map_file)

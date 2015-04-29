@@ -334,9 +334,9 @@ class AlignmentToMap(object):
                 try:
                     fragment_length = self.__fragment_lengths[
                         anchor.fragment]
-                except ValueError:
+                except KeyError:
                     logger.error('the fragment %s length is missing',
-                                 anchor.query)
+                                 anchor.fragment)
                     raise AlignmentToMapError
 
                 # determine the fragment's start and end positions
