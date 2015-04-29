@@ -272,15 +272,16 @@ class AlignmentToMap(object):
                         bitscore_ratio_threshold:
                     self.__anchors[fragment] = \
                         AlignmentToMap.Anchor(
-                            fragment=alignments[0].fragment,
-                            fr_start=alignments[0].fr_start - 1,
-                            fr_end=alignments[0].fr_end,
-                            fr_strand=alignments[0].fr_strand,
-                            ref_chr=alignments[0].ref_chr,
-                            ref_start=min(alignments[0].ref_start,
-                                          alignments[0].ref_end) - 1,
-                            ref_end=max(alignments[0].ref_start,
-                                        alignments[0].ref_end)
+                            fragment=alignments[0].query,
+                            fr_start=alignments[0].q_start - 1,
+                            fr_end=alignments[0].q_end,
+                            fr_strand='+' if alignments[0].s_start <
+                            alignments[0].s_end else '-',
+                            ref_chr=alignments[0].subject,
+                            ref_start=min(alignments[0].s_start,
+                                          alignments[0].s_end) - 1,
+                            ref_end=max(alignments[0].s_start,
+                                        alignments[0].s_end)
                         )
                 elif alignments[0].subject == alignments[1].subject:
                     # the fragment is considered unlocalized
@@ -293,15 +294,16 @@ class AlignmentToMap(object):
                 # there is a single alignment, use it as an anchor
                 self.__anchors[fragment] = \
                     AlignmentToMap.Anchor(
-                        fragment=alignments[0].fragment,
-                        fr_start=alignments[0].fr_start - 1,
-                        fr_end=alignments[0].fr_end,
-                        fr_strand=alignments[0].fr_strand,
-                        ref_chr=alignments[0].ref_chr,
-                        ref_start=min(alignments[0].ref_start,
-                                      alignments[0].ref_end) - 1,
-                        ref_end=max(alignments[0].ref_start,
-                                    alignments[0].ref_end)
+                        fragment=alignments[0].query,
+                        fr_start=alignments[0].q_start - 1,
+                        fr_end=alignments[0].q_end,
+                        fr_strand='+' if alignments[0].s_start <
+                        alignments[0].s_end else '-',
+                        ref_chr=alignments[0].subject,
+                        ref_start=min(alignments[0].s_start,
+                                      alignments[0].s_end) - 1,
+                        ref_end=max(alignments[0].s_start,
+                                    alignments[0].s_end)
                     )
 
         self.__anchor_fragments()
@@ -315,48 +317,62 @@ class AlignmentToMap(object):
         # first, we split anchors by reference genome chromosomes
         chr_anchors = defaultdict(list)
         for anchor in self.__anchors.itervalues():
-            chr_anchors[anchor.subject].append(anchor)
+            chr_anchors[anchor.ref_chr].append(anchor)
 
         # second, we sort the anchors by their position on the
         # chromosomes
         for chr_name in chr_anchors.iterkeys():
             chr_anchors[chr_name] = sorted(
-                chr_anchors[chr_name],
-                key=lambda x: min(x.s_start, x.s_end)
+                chr_anchors[chr_name], key=attrgetter('ref_start')
             )
 
         # now we form a fragment map from the anchors
         self.__fragment_map = Map()
         for chr_name in chr_anchors.iterkeys():
+            previous_end = 0
             for anchor in chr_anchors[chr_name]:
                 try:
-                    fragment_length = self.__anchors[anchor.query]
+                    fragment_length = self.__fragment_lengths[
+                        anchor.fragment]
                 except ValueError:
                     logger.error('the fragment %s length is missing',
                                  anchor.query)
                     raise AlignmentToMapError
 
                 # determine the fragment's start and end positions
-                if anchor.s_start < anchor.s_end:
-                    fragment_strand = '+'
+                if anchor.fr_strand == '+':
                     ref_start = anchor.ref_start - anchor.fr_start
                     ref_end = ref_start + fragment_length
                 else:
-                    fragment_strand = '-'
                     ref_end = anchor.ref_end + anchor.fr_start
                     ref_start = ref_end - fragment_length
 
                 new_record = Map.Record(
-                    fr_name=anchor.query,
+                    fr_name=anchor.fragment,
                     fr_length=fragment_length,
                     fr_start=0,
                     fr_end=fragment_length,
-                    fr_strand=fragment_strand,
-                    ref_chr=anchor.subject,
-                    ref_start=ref_start,
-                    ref_end=ref_end
+                    fr_strand=anchor.fr_strand,
+                    ref_chr=anchor.ref_chr,
+                    ref_start=previous_end,
+                    ref_end=previous_end + ref_end - ref_start
                 )
                 self.__fragment_map.add_record(new_record)
+                previous_end += ref_end - ref_start
+
+                # add a gap
+                new_gap = Map.Record(
+                    fr_name='GAP',
+                    fr_length=self.__gap_size,
+                    fr_start=0,
+                    fr_end=self.__gap_size,
+                    fr_strand='+',
+                    ref_chr=anchor.ref_chr,
+                    ref_start=previous_end,
+                    ref_end=previous_end + self.__gap_size
+                )
+                previous_end += self.__gap_size
+                self.__fragment_map.add_record(new_gap)
 
 
 class Simulator(object):
@@ -416,7 +432,7 @@ class Simulator(object):
                 ref_end=fragment_positions[chr_num] +
                 self.__fragment_length
             ))
-            fragment_positions[chr_num] += self.__gap_size
+            fragment_positions[chr_num] += self.__fragment_length
             self.__map.add_record(Map.Record(
                 fr_name='GAP',
                 fr_length=self.__gap_size,
