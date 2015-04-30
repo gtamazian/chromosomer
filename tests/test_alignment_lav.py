@@ -40,8 +40,7 @@ class TestLavAlignment(unittest.TestCase):
             parser = Lav(os.path.join(self.__incorrect_file_dir,
                                       lav_file))
             with self.assertRaises(LavAlignmentError):
-                for alignment in parser.alignments():
-                    self.assertEqual(len(alignment), 6)
+                parser.alignments().next()
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestLavAlignment)
 unittest.TextTestRunner(verbosity=2).run(suite)
