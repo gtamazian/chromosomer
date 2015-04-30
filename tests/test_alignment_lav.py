@@ -7,6 +7,7 @@
 import os
 import logging
 import unittest
+from chromosomer.alignment.exception import LavAlignmentError
 from chromosomer.alignment.lav import Lav
 
 path = os.path.dirname(__file__)
@@ -18,18 +19,29 @@ class TestLavAlignment(unittest.TestCase):
         self.__correct_file = os.path.join(
             'data', 'lav', 'lav_alignments.txt'
         )
+        self.__incorrect_file_dir = os.path.join(
+            'data', 'lav', 'incorrect_input'
+        )
+        self.__incorrect_files = os.listdir(self.__incorrect_file_dir)
         # silence the logging messages
         logging.disable(logging.ERROR)
 
     def test_alignments(self):
         """
-        Check if the parser reads a file in the BLAST tabular format
-        in the correct way.
+        Check if the parser reads a file in the LAV format in the
+        correct way.
         """
         # test against the correct input file
         parser = Lav(self.__correct_file)
         for alignment in parser.alignments():
             self.assertEqual(len(alignment), 6)
+        # test againts incorrect input files
+        for lav_file in self.__incorrect_files:
+            parser = Lav(os.path.join(self.__incorrect_file_dir,
+                                      lav_file))
+            with self.assertRaises(LavAlignmentError):
+                for alignment in parser.alignments():
+                    self.assertEqual(len(alignment), 6)
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestLavAlignment)
 unittest.TextTestRunner(verbosity=2).run(suite)
