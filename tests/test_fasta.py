@@ -53,8 +53,7 @@ class TestRandomSequence(unittest.TestCase):
         self.assertEqual(len(sequence), 10)
         self.assertIsInstance(sequence, str)
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestWriter)
-unittest.TextTestRunner(verbosity=2).run(suite)
-
-suite = unittest.TestLoader().loadTestsFromTestCase(TestRandomSequence)
-unittest.TextTestRunner(verbosity=2).run(suite)
+writer_suite = unittest.TestLoader().loadTestsFromTestCase(TestWriter)
+random_seq_suite = unittest.TestLoader().loadTestsFromTestCase(
+    TestRandomSequence)
+alltests = unittest.TestSuite([writer_suite, random_seq_suite])

@@ -14,8 +14,8 @@ s {
   "NC_000913.fa" 1 4641652 0 1
 }
 h {
-   ">gi|556503834|ref|NC_000913.3|"
-   ">gi|556503834|ref|NC_000913.3| Escherichia coli str. K-12 substr. MG1655, complete genome (reverse complement)"
+   ">gi|556503834|ref|NC_000913.3| Escherichia coli str. K-12 substr. MG1655, complete genome"
+   "gi|556503834|ref|NC_000913.3| Escherichia coli str. K-12 substr. MG1655, complete genome"
 }
 a {
   s 5350
@@ -35,16 +35,7 @@ a {
   e 66744 66829
   l 66564 66649 66744 66829 96
 }
-x {
-  n 10
-}
 m {
-  x 1 100
-  x 200 301
   n 0
-}
-Census {
-  1 100
-  2 100
 }
 #:eof

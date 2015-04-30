@@ -367,16 +367,12 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
             os.unlink(i)
 
 
-suite = unittest.TestLoader().loadTestsFromTestCase(
+alignment_to_map_suite = unittest.TestLoader().loadTestsFromTestCase(
     TestFragmentAlignmentToMap)
-unittest.TextTestRunner(verbosity=2).run(suite)
-
-suite = unittest.TestLoader().loadTestsFromTestCase(TestFragmentLength)
-unittest.TextTestRunner(verbosity=2).run(suite)
-
-suite = unittest.TestLoader().loadTestsFromTestCase(TestFragmentMap)
-unittest.TextTestRunner(verbosity=2).run(suite)
-
-suite = unittest.TestLoader().loadTestsFromTestCase(
+length_suite = unittest.TestLoader().loadTestsFromTestCase(
+    TestFragmentLength)
+map_suite = unittest.TestLoader().loadTestsFromTestCase(TestFragmentMap)
+simulator_suite = unittest.TestLoader().loadTestsFromTestCase(
     TestFragmentSimulator)
-unittest.TextTestRunner(verbosity=2).run(suite)
+alltests = unittest.TestSuite([alignment_to_map_suite, length_suite,
+                               map_suite, simulator_suite])

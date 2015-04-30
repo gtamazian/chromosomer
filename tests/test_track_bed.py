@@ -10,6 +10,7 @@ import unittest
 from chromosomer.track.bed import BedRecord
 from chromosomer.track.bed import Reader
 from chromosomer.track.bed import Writer
+from chromosomer.track.exceptions import BedError
 from itertools import izip
 path = os.path.dirname(__file__)
 os.chdir(path)
@@ -19,6 +20,9 @@ class TestBedReader(unittest.TestCase):
     def setUp(self):
         self.__correct_file = os.path.join(
             'data', 'bed', 'correct.bed'
+        )
+        self.__incorrect_file = os.path.join(
+            'data', 'bed', 'incorrect.bed'
         )
         # silence the logging messages
         logging.disable(logging.ERROR)
@@ -32,6 +36,11 @@ class TestBedReader(unittest.TestCase):
         parser = Reader(self.__correct_file)
         for record in parser.records():
             self.assertIsInstance(record, BedRecord)
+        # test agains the incorrect input file
+        parser = Reader(self.__incorrect_file)
+        with self.assertRaises(BedError):
+            for record in parser.records():
+                self.assertIsInstance(record, BedRecord)
 
 
 class TestBedWriter(unittest.TestCase):
@@ -63,8 +72,8 @@ class TestBedWriter(unittest.TestCase):
             for x, y in izip(original_file, written_file):
                 self.assertEqual(x, y)
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestBedReader)
-unittest.TextTestRunner(verbosity=2).run(suite)
-
-suite = unittest.TestLoader().loadTestsFromTestCase(TestBedWriter)
-unittest.TextTestRunner(verbosity=2).run(suite)
+reader_suite = unittest.TestLoader().loadTestsFromTestCase(
+    TestBedReader)
+writer_suite = unittest.TestLoader().loadTestsFromTestCase(
+    TestBedWriter)
+unittest.TestSuite([reader_suite, writer_suite])

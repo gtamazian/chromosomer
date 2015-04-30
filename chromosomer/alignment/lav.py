@@ -107,6 +107,10 @@ class Lav(object):
                         self.__parse_m_stanza()
                     elif self.__line.startswith('Census'):
                         self.__parse_census_stanza()
+                    else:
+                        logger.error('line %d: an incorrect section',
+                                     self.__lineno)
+                        raise LavAlignmentError
                     self.__line = self.__handler.readline().rstrip()
                     self.__lineno += 1
 
@@ -179,7 +183,7 @@ class Lav(object):
         while self.__line != '}':
             # there must be only two sequence descriptions in the
             # stanza
-            if len(sequence_files) > 2:
+            if len(sequence_files) >= 2:
                 logger.error('line %d: too many sequence files in'
                              'the s stanza', self.__lineno)
                 raise LavAlignmentError
@@ -193,7 +197,7 @@ class Lav(object):
                              self.__lineno, len(line_parts))
                 raise LavAlignmentError
             # remove quotes from the file name
-            if len(line_parts) > 2:
+            if len(line_parts[0]) > 2:
                 line_parts[0] = line_parts[0][1:-1]
             else:
                 logger.error('line %d: an empty file name',
@@ -253,7 +257,7 @@ class Lav(object):
         while self.__line != '}':
             # there must be only two sequence descriptions in the
             # stanza
-            if len(header_lines) > 2:
+            if len(header_lines) >= 2:
                 logger.error('line %d: too many header lines in the '
                              'h stanza', self.__lineno)
                 raise LavAlignmentError
@@ -271,18 +275,12 @@ class Lav(object):
                 logger.error('line %d: the header line must start '
                              'with >', self.__lineno)
                 raise LavAlignmentError
-            # check if a sequence name is present in the line
-            if len(line_parts[0]) < 2:
-                logger.error('line %d: the header line contains no '
-                             'sequence name', self.__lineno)
-                raise LavAlignmentError
-            else:
-                # remove '>' from the header
-                line_parts[0] = line_parts[0][1:]
+            # remove '>' from the header
+            line_parts[0] = line_parts[0][1:]
             # check if there is the reverse complement flag in the line
             if len(line_parts) > 2:
                 reverse_flag = line_parts[-2] == '(reverse' and \
-                    line_parts[-1] == 'complement)'
+                    line_parts[-1] == 'complement)"'
             else:
                 reverse_flag = False
             # cut line parts with the '>' sign and the reverse
@@ -476,7 +474,7 @@ class Lav(object):
             # we read masked region lines unless we read a line
             # starting with the n symbol
             line_parts = self.__line.split(None, 3)
-            if line_parts[0] == 'm':
+            if line_parts[0] == 'x':
                 if len(line_parts) == 3:
                     for i in xrange(1, 3):
                         try:
@@ -545,6 +543,8 @@ class Lav(object):
         # start reading the Census stanza contents
         result = []
         i = 1
+        self.__line = self.__handler.readline().rstrip()
+        self.__lineno += 1
         while self.__line != '}':
             line_parts = self.__line.split(None, 2)
             try:
