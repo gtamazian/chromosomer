@@ -41,6 +41,3 @@ class TestLavAlignment(unittest.TestCase):
                                       lav_file))
             with self.assertRaises(LavAlignmentError):
                 parser.alignments().next()
-
-suite = unittest.TestLoader().loadTestsFromTestCase(TestLavAlignment)
-unittest.TextTestRunner(verbosity=2).run(suite)

@@ -365,14 +365,3 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
         os.unlink(self.__alignment_file)
         for i in glob.glob('{}*'.format(self.__chromosome_file)):
             os.unlink(i)
-
-
-alignment_to_map_suite = unittest.TestLoader().loadTestsFromTestCase(
-    TestFragmentAlignmentToMap)
-length_suite = unittest.TestLoader().loadTestsFromTestCase(
-    TestFragmentLength)
-map_suite = unittest.TestLoader().loadTestsFromTestCase(TestFragmentMap)
-simulator_suite = unittest.TestLoader().loadTestsFromTestCase(
-    TestFragmentSimulator)
-alltests = unittest.TestSuite([alignment_to_map_suite, length_suite,
-                               map_suite, simulator_suite])

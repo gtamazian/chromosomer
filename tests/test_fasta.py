@@ -52,8 +52,3 @@ class TestRandomSequence(unittest.TestCase):
         sequence = seq_generator.get()
         self.assertEqual(len(sequence), 10)
         self.assertIsInstance(sequence, str)
-
-writer_suite = unittest.TestLoader().loadTestsFromTestCase(TestWriter)
-random_seq_suite = unittest.TestLoader().loadTestsFromTestCase(
-    TestRandomSequence)
-alltests = unittest.TestSuite([writer_suite, random_seq_suite])

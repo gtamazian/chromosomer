@@ -76,7 +76,3 @@ class TestWrapperBlastN(unittest.TestCase):
         wrapper.set('-outfmt', 6)
         wrapper.get('-outfmt')
         wrapper.launch()
-
-suite = unittest.TestLoader().loadTestsFromTestCase(
-    TestWrapperMakeBlastDb)
-unittest.TextTestRunner(verbosity=2).run(suite)

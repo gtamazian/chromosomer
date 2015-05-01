@@ -63,6 +63,3 @@ class TestBlastAlignment(unittest.TestCase):
                 'data', 'blast', 'incorrect_input', incorrect_input))
             with self.assertRaises(BlastAlignmentError):
                 parser.alignments().next()
-
-suite = unittest.TestLoader().loadTestsFromTestCase(TestBlastAlignment)
-unittest.TextTestRunner(verbosity=2).run(suite)
