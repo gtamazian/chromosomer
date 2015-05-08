@@ -5,6 +5,10 @@
 # gaik (dot) tamazian (at) gmail (dot) com
 
 import argparse
+from chromosomer.fragment import AlignmentToMap
+from chromosomer.fragment import Length
+from chromosomer.fragment import Map
+from chromosomer.alignment.blast import Blast
 
 
 def main():
@@ -16,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser(description='Reference-assisted '
                                                  'chromosome assembly '
                                                  'tool.')
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest='command')
 
     # Parser for the 'chromosomer assemble' part that produces a FASTA
     # file of assembled chromosomes from the specified fragment map.
@@ -52,15 +56,41 @@ def main():
              'reference chromosomes'
     )
     alignmentmap_parser.add_argument(
-        'interfragment_gap_size', type=int,
+        'gap_size', type=int,
         help='a size of a gap inserted between mapped fragments'
+    )
+    alignmentmap_parser.add_argument(
+        'fragment_lengths',
+        help='a file containing lengths of fragment sequences'
     )
     alignmentmap_parser.add_argument(
         'output_map',
         help='an output fragment map file name'
     )
 
+    # optional arguments for the 'alignmentmap' routine
+    alignmentmap_parser.add_argument(
+        '-r', '--ratio_threshold', type=float, default=1.2,
+        help='the least ratio of two greatest fragment alignment '
+             'scores to determine the fragment placed to a reference '
+             'genome'
+    )
+
     args = parser.parse_args()
+
+    if args.command == 'assemble':
+        fragment_map = Map()
+        fragment_map.read(args.map)
+        fragment_map.assemble(args.fragment_fasta,
+                              args.output_fasta)
+    elif args.command == 'alignmentmap':
+        fragment_lengths = Length(args.fragment_lengths)
+        map_creator = AlignmentToMap(args.gap_size,
+                                     fragment_lengths.lengths())
+        alignments = Blast(args.alignment_file)
+        fragment_map = map_creator.blast(alignments,
+                                         args.ratio_threshold)
+        fragment_map.write(args.output_map)
 
 
 if __name__ == '__main__':
