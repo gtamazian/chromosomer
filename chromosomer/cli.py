@@ -73,7 +73,7 @@ def chromosomer():
         '-r', '--ratio_threshold', type=float, default=1.2,
         help='the least ratio of two greatest fragment alignment '
              'scores to determine the fragment placed to a reference '
-             'genome'
+             'genome (the default value 1.2)'
     )
 
     args = parser.parse_args()
