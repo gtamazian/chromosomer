@@ -499,13 +499,13 @@ class Simulator(object):
                 chromosome_fasta.write(name, seq)
 
 
-class Length(object):
+class SeqLengths(object):
     """
     The class implements routines to handle fragment sequence lengths.
     """
     def __init__(self, filename):
         """
-        Create a Length object to handle sequence lengths of the
+        Create a SeqLengths object to handle sequence lengths of the
         specified FASTA file.
 
         :param filename: a name of a FASTA file with sequences which

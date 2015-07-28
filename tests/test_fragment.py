@@ -16,7 +16,7 @@ from bioformats.fasta import RandomSequence
 from bioformats.fasta import Writer
 from chromosomer.fragment import AlignmentToMap
 from chromosomer.fragment import AlignmentToMapError
-from chromosomer.fragment import Length
+from chromosomer.fragment import SeqLengths
 from chromosomer.fragment import Map
 from chromosomer.fragment import MapError
 from chromosomer.fragment import Simulator
@@ -238,7 +238,7 @@ class TestFragmentLength(unittest.TestCase):
         """
         Test the lengths method.
         """
-        x = Length(self.__fasta_temp)
+        x = SeqLengths(self.__fasta_temp)
         lengths = x.lengths()
         for i in lengths.itervalues():
             self.assertEqual(i, self.__fragment_length)
@@ -334,7 +334,7 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
         Test the blast method which utilizes BLASTN alignments to
         construct a fragment map.
         """
-        fragment_lengths = Length(self.__fragment_file)
+        fragment_lengths = SeqLengths(self.__fragment_file)
         map_creator = AlignmentToMap(self.__gap_size,
                                      fragment_lengths.lengths())
         blast_alignments = BlastTab(self.__alignment_file)
