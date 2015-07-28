@@ -8,8 +8,8 @@ import glob
 import os
 import tempfile
 import unittest
-from chromosomer.fasta import RandomSequence
-from chromosomer.fasta import Writer
+from bioformats.fasta import RandomSequence
+from bioformats.fasta import Writer
 from chromosomer.wrapper.blast import BlastN
 from chromosomer.wrapper.blast import MakeBlastDb
 

@@ -8,11 +8,11 @@ import logging
 import pyfaidx
 import random
 import string
-from chromosomer.alignment.blast import Blast
+from bioformats.blast import BlastTab
 from chromosomer.exception import MapError
 from chromosomer.exception import AlignmentToMapError
-from chromosomer.fasta import RandomSequence
-from chromosomer.fasta import Writer
+from bioformats.fasta import RandomSequence
+from bioformats.fasta import Writer
 from collections import defaultdict
 from collections import namedtuple
 from operator import attrgetter
@@ -248,7 +248,7 @@ class AlignmentToMap(object):
                     arm_prefix = '_2'
                 new_alignment = list(alignment)
                 new_alignment[1] += arm_prefix
-                alignment = Blast.Alignment(*new_alignment)
+                alignment = BlastTab.Alignment(*new_alignment)
 
             temp_anchors[alignment.query].append(alignment)
             # check if there is more than 2 alignments for the

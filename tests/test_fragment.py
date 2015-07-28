@@ -11,9 +11,9 @@ import pyfaidx
 import string
 import tempfile
 import unittest
-from chromosomer.alignment.blast import Blast
-from chromosomer.fasta import RandomSequence
-from chromosomer.fasta import Writer
+from bioformats.blast import BlastTab
+from bioformats.fasta import RandomSequence
+from bioformats.fasta import Writer
 from chromosomer.fragment import AlignmentToMap
 from chromosomer.fragment import AlignmentToMapError
 from chromosomer.fragment import Length
@@ -337,7 +337,7 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
         fragment_lengths = Length(self.__fragment_file)
         map_creator = AlignmentToMap(self.__gap_size,
                                      fragment_lengths.lengths())
-        blast_alignments = Blast(self.__alignment_file)
+        blast_alignments = BlastTab(self.__alignment_file)
         new_map = map_creator.blast(blast_alignments, 1.2)
         orig_map = Map()
         orig_map.read(self.__map_file)

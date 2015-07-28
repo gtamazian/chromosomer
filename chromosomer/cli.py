@@ -8,10 +8,10 @@ import argparse
 from chromosomer.fragment import AlignmentToMap
 from chromosomer.fragment import Length
 from chromosomer.fragment import Map
-from chromosomer.alignment.blast import Blast
+from bioformats.blast import BlastTab
 
 
-def main():
+def chromosomer():
     """
     The main function that is run if Chromosomer was launched. It
     defines a command-line parser which processed arguments passed to
@@ -87,11 +87,7 @@ def main():
         fragment_lengths = Length(args.fragment_lengths)
         map_creator = AlignmentToMap(args.gap_size,
                                      fragment_lengths.lengths())
-        alignments = Blast(args.alignment_file)
+        alignments = BlastTab(args.alignment_file)
         fragment_map = map_creator.blast(alignments,
                                          args.ratio_threshold)
         fragment_map.write(args.output_map)
-
-
-if __name__ == '__main__':
-    main()
