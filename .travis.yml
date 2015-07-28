@@ -2,7 +2,7 @@ language: python
 addons:
   apt:
     packages:
-	  - ncbi-blast+
+      - ncbi-blast+
 python:
   - "2.7"
 # command to install dependencies
