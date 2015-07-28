@@ -9,7 +9,6 @@ python:
 install: 
   - "pip install -r requirements.txt"
   - "pip install coveralls"
-  - "sudo -E apt-get install -qq ncbi-blast+"
 # command to run tests
 script: nosetests --with-coverage --cover-package=chromosomer
 after_success:
