@@ -17,16 +17,16 @@ def chromosomer():
     defines a command-line parser which processed arguments passed to
     the program.
     """
-    parser = argparse.ArgumentParser(description='Reference-assisted '
-                                                 'chromosome assembly '
-                                                 'tool.')
+    parser = argparse.ArgumentParser(
+        description='Reference-assisted chromosome assembly tool.')
     subparsers = parser.add_subparsers(dest='command')
 
     # Parser for the 'chromosomer assemble' part that produces a FASTA
     # file of assembled chromosomes from the specified fragment map.
     assemble_parser = subparsers.add_parser(
         'assemble',
-        description='Get the FASTA file of assembled chromosomes.'
+        description='Get the FASTA file of assembled chromosomes.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
     # required arguments for the 'assemble' routine
@@ -45,14 +45,15 @@ def chromosomer():
                                  help='keep soft masking from the '
                                       'original fragment sequences')
 
-    # required arguments for the 'chromosomer fragmentmap' part that
+    # Parser for the 'chromosomer fragmentmap' part that
     # produces a map of fragment positions on reference
     # chromosomes from BLAST alignments of the fragments to the
     # chromosomes.
     fragmentmap_parser = subparsers.add_parser(
         'fragmentmap',
         description='Construct a fragment map from fragment '
-                    'alignments to reference chromosomes'
+                    'alignments to reference chromosomes.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
     # required arguments for the 'fragmentmap' routine
@@ -79,7 +80,7 @@ def chromosomer():
         '-r', '--ratio_threshold', type=float, default=1.2,
         help='the least ratio of two greatest fragment alignment '
              'scores to determine the fragment placed to a reference '
-             'genome (the default value 1.2)'
+             'genome'
     )
 
     args = parser.parse_args()
