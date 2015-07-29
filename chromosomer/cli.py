@@ -39,6 +39,12 @@ def chromosomer():
                                  help='the output FASTA file of the '
                                       'assembled chromosome sequences')
 
+    # optinal arguments for the 'assemble' routine
+    assemble_parser.add_argument('-s', '--save_soft_mask',
+                                 action='store_true',
+                                 help='keep soft masking from the '
+                                      'original fragment sequences')
+
     # required arguments for the 'chromosomer fragmentmap' part that
     # produces a map of fragment positions on reference
     # chromosomes from BLAST alignments of the fragments to the
@@ -82,7 +88,8 @@ def chromosomer():
         fragment_map = Map()
         fragment_map.read(args.map)
         fragment_map.assemble(args.fragment_fasta,
-                              args.output_fasta)
+                              args.output_fasta,
+                              args.save_soft_mask)
     elif args.command == 'fragmentmap':
         fragment_lengths = SeqLengths(args.fragment_lengths)
         map_creator = AlignmentToMap(args.gap_size,

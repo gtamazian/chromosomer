@@ -126,7 +126,8 @@ class Map(object):
                     new_line = template.format(*fragment)
                     output_map_file.write(new_line)
 
-    def assemble(self, fragment_filename, output_filename):
+    def assemble(self, fragment_filename, output_filename,
+                 save_soft_mask=False):
         """
         Assemble chromosome sequences from fragments.
 
@@ -134,6 +135,11 @@ class Map(object):
             sequences
         :param output_filename: a name of the output FASTA file of
             the assembled chromosomes
+        :param save_soft_mask: save soft-masking in sequences being
+            assembled or not
+        :type fragment_filename: str
+        :type output_filename: str
+        :type save_soft_mask: bool
         """
         fragment_fasta = pyfaidx.Fasta(fragment_filename)
         complement = string.maketrans('ATCGatcgNnXx', 'TAGCtagcNnXx')
@@ -153,6 +159,8 @@ class Map(object):
                             record.fr_start:record.fr_end].seq
                         # convert the sequence to non-unicode
                         record_seq = str(record_seq)
+                        if not save_soft_mask:
+                            record_seq = record_seq.upper()
                         # if the fragment orientation is reverse, then
                         # the reverse complement of the fragment
                         # sequence is written
