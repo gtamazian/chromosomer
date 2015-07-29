@@ -217,8 +217,11 @@ class AlignmentToMap(object):
         fragments and reference chromosomes.
 
         :param blast_alignments: BLAST blast_alignments
-        :param bitscore_ratio_threshold:
-        :type blast_alignments: Blast
+        :param bitscore_ratio_threshold: the minimal ratio of two
+            greatest fragment alignment bit scores to consider the
+            fragment placed to a reference
+        :type blast_alignments: BlastTab
+        :type bitscore_ratio_threshold: float
         :return: the fragment map constructed from the blast_alignments
         :rtype: Map
         """
