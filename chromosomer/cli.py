@@ -5,9 +5,15 @@
 # gaik (dot) tamazian (at) gmail (dot) com
 
 import argparse
+import bioformats.bed
+import bioformats.gff3
+import vcf
 from chromosomer.fragment import AlignmentToMap
 from chromosomer.fragment import SeqLengths
 from chromosomer.fragment import Map
+from chromosomer.transfer import BedTransfer
+from chromosomer.transfer import Gff3Transfer
+from chromosomer.transfer import VcfTransfer
 from bioformats.blast import BlastTab
 
 
@@ -83,6 +89,31 @@ def chromosomer():
              'genome'
     )
 
+    # Parser for the 'chromosomer transfer' part that transfers
+    # genome feature annotation from fragments to their assembly
+    transfer_parser = subparsers.add_parser(
+        'transfer',
+        description='Transfer annotated genomic features from '
+                    'fragments to their assembly.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    # required arguments for the 'transfer' routine
+    transfer_parser.add_argument('map',
+                                 help='a fragment map file')
+    transfer_parser.add_argument('annotation',
+                                 help='a file of annotated genome '
+                                      'features')
+    transfer_parser.add_argument('output',
+                                 help='an output file of the '
+                                      'transfered annotation')
+
+    # optional arguments for the 'transfer' routine
+    transfer_parser.add_argument('-f', '--format', default='bed',
+                                 help='the format of a file of '
+                                      'annotated features (bed, '
+                                      'gff3 or vcf)')
+
     args = parser.parse_args()
 
     if args.command == 'assemble':
@@ -99,3 +130,29 @@ def chromosomer():
         fragment_map = map_creator.blast(alignments,
                                          args.ratio_threshold)
         fragment_map.write(args.output_map)
+    elif args.command == 'transfer':
+        if args.format == 'bed':
+            transferrer = BedTransfer(args.map)
+            with bioformats.bed.Writer(args.output) as output_file:
+                for feature in bioformats.bed.Reader(
+                        args.annotation).records():
+                    transferred_feature = transferrer.feature(feature)
+                    if transferred_feature is not None:
+                        output_file.write(transferred_feature)
+        elif args.format == 'gff3':
+            transferrer = Gff3Transfer(args.map)
+            with bioformats.gff3.Writer(args.output) as output_file:
+                for feature in bioformats.gff3.Reader(
+                        args.annotation).records():
+                    transferred_feature = transferrer.feature(feature)
+                    if transferred_feature is not None:
+                        output_file.write(transferred_feature)
+        elif args.format == 'vcf':
+            transferrer = VcfTransfer(args.map)
+            reader = vcf.Reader(open(args.annotation))
+            writer = vcf.Writer(open(args.output, 'w'), reader)
+            for variant in reader:
+                transferred_feature = transferrer.feature(variant)
+                if transferred_feature is not None:
+                    writer.write_record(transferred_feature)
+            writer.close()
