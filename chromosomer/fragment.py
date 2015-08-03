@@ -317,6 +317,23 @@ class AlignmentToMap(object):
                                     alignments[0].s_end)
                     )
 
+        # get total lengths of mapped, unlocalized and unplaced
+        # fragments
+        total_mapped = total_unlocalized = total_unplaced = 0
+        for i in self.__anchors.itervalues():
+            total_mapped += self.__fragment_lengths[i.fragment]
+        for i in self.__unlocalized:
+            total_unlocalized += self.__fragment_lengths[i[0]]
+        for i in self.__unplaced:
+            total_unplaced += self.__fragment_lengths[i]
+
+        logger.info('%d mapped fragments of total length %d bp',
+                    len(self.__anchors), total_mapped)
+        logger.info('%d unlocalized fragments of total length %d bp',
+                    len(self.__unlocalized), total_unlocalized)
+        logger.info('%d unplaced fragments of total length %d bp',
+                    len(self.__unplaced), total_unplaced)
+
         self.__anchor_fragments()
 
         return self.__fragment_map
@@ -338,6 +355,7 @@ class AlignmentToMap(object):
             )
 
         # now we form a fragment map from the anchors
+        total_inserted_gaps = 0
         self.__fragment_map = Map()
         for chr_name in chr_anchors.iterkeys():
             previous_end = 0
@@ -384,6 +402,10 @@ class AlignmentToMap(object):
                 )
                 previous_end += self.__gap_size
                 self.__fragment_map.add_record(new_gap)
+                total_inserted_gaps += self.__gap_size
+
+        logger.info('%d chromosomes formed', len(chr_anchors))
+        logger.info('%d bp of gaps inserted', total_inserted_gaps)
 
 
 class Simulator(object):

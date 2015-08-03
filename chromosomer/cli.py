@@ -7,6 +7,7 @@
 import argparse
 import bioformats.bed
 import bioformats.gff3
+import logging
 import vcf
 from chromosomer.fragment import AlignmentToMap
 from chromosomer.fragment import SeqLengths
@@ -15,6 +16,22 @@ from chromosomer.transfer import BedTransfer
 from chromosomer.transfer import Gff3Transfer
 from chromosomer.transfer import VcfTransfer
 from bioformats.blast import BlastTab
+
+from chromosomer.fragment import logger
+logger.setLevel(logging.INFO)
+logger.propagate = False
+formatter = logging.Formatter('%(asctime)-15s - %(message)s',
+                              '%Y-%m-%d %H:%M:%S')
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+logging.basicConfig()
+cli_logger = logging.getLogger(__name__)
+cli_logger.propagate = False
+cli_logger.addHandler(ch)
+cli_logger.setLevel(logging.INFO)
 
 
 def chromosomer():
@@ -131,28 +148,39 @@ def chromosomer():
                                          args.ratio_threshold)
         fragment_map.write(args.output_map)
     elif args.command == 'transfer':
+        total_count = transferred_count = 0
         if args.format == 'bed':
             transferrer = BedTransfer(args.map)
             with bioformats.bed.Writer(args.output) as output_file:
                 for feature in bioformats.bed.Reader(
                         args.annotation).records():
+                    total_count += 1
                     transferred_feature = transferrer.feature(feature)
                     if transferred_feature is not None:
+                        transferred_count += 1
                         output_file.write(transferred_feature)
         elif args.format == 'gff3':
             transferrer = Gff3Transfer(args.map)
             with bioformats.gff3.Writer(args.output) as output_file:
                 for feature in bioformats.gff3.Reader(
                         args.annotation).records():
+                    total_count += 1
                     transferred_feature = transferrer.feature(feature)
                     if transferred_feature is not None:
+                        transferred_count += 1
                         output_file.write(transferred_feature)
         elif args.format == 'vcf':
             transferrer = VcfTransfer(args.map)
             reader = vcf.Reader(open(args.annotation))
             writer = vcf.Writer(open(args.output, 'w'), reader)
             for variant in reader:
+                total_count += 1
                 transferred_feature = transferrer.feature(variant)
                 if transferred_feature is not None:
+                    transferred_count += 1
                     writer.write_record(transferred_feature)
             writer.close()
+
+        cli_logger.info('%d features transferred', transferred_count)
+        cli_logger.info('%d features skipped',
+                        total_count - transferred_count)
