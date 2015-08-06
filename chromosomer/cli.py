@@ -48,6 +48,7 @@ def chromosomer():
     # file of assembled chromosomes from the specified fragment map.
     assemble_parser = subparsers.add_parser(
         'assemble',
+        help='get sequences of assembled chromosomes',
         description='Get the FASTA file of assembled chromosomes.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -76,6 +77,7 @@ def chromosomer():
         'fragmentmap',
         description='Construct a fragment map from fragment '
                     'alignments to reference chromosomes.',
+        help='construct a fragment map from alignments',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
@@ -112,6 +114,8 @@ def chromosomer():
         'transfer',
         description='Transfer annotated genomic features from '
                     'fragments to their assembly.',
+        help='transfer annotated features from fragments to '
+             'chromosomes',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
