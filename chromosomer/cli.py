@@ -113,8 +113,8 @@ def chromosomer():
     )
     fragmentmap_parser.add_argument(
         'fragment_lengths',
-        help='a file containing lengths of fragment sequences; it can'
-             'be obtained using \'chromosomer fastalength\''
+        help='a file containing lengths of fragment sequences; it can '
+             'be obtained using the \'chromosomer fastalength\' tool'
     )
     fragmentmap_parser.add_argument(
         'output_map',
@@ -161,7 +161,7 @@ def chromosomer():
     fastalength_parser = subparsers.add_parser(
         'fastalength',
         description='Get lengths of sequences in the specified FASTA '
-                    'file (required to build a fragment map)',
+                    'file (required to build a fragment map).',
         help='get lengths of sequences from a FASTA file',
     )
 
