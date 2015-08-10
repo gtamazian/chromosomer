@@ -7,6 +7,7 @@
 import argparse
 import bioformats.bed
 import bioformats.gff3
+import csv
 import logging
 import vcf
 from chromosomer.fragment import AlignmentToMap
@@ -32,6 +33,25 @@ cli_logger = logging.getLogger(__name__)
 cli_logger.propagate = False
 cli_logger.addHandler(ch)
 cli_logger.setLevel(logging.INFO)
+
+
+def read_fragment_lengths(filename):
+    """
+    Given a name of a file with fragment lengths, read them to a
+    dictionary.
+
+    :param filename: a name of a file with fragment lengths
+    :type filename: str
+    :return: a dictionary which keys are fragment sequence names and
+        values are their lengths
+    :rtype: dict
+    """
+    result = dict()
+    with open(filename) as length_file:
+        length_reader = csv.reader(length_file, delimiter='\t')
+        for fragment, length in length_reader:
+            result[fragment] = int(length)
+    return result
 
 
 def chromosomer():
@@ -93,7 +113,8 @@ def chromosomer():
     )
     fragmentmap_parser.add_argument(
         'fragment_lengths',
-        help='a file containing lengths of fragment sequences'
+        help='a file containing lengths of fragment sequences; it can'
+             'be obtained using \'chromosomer fastalength\''
     )
     fragmentmap_parser.add_argument(
         'output_map',
@@ -135,6 +156,23 @@ def chromosomer():
                                       'annotated features (bed, '
                                       'gff3 or vcf)')
 
+    # Parser for the 'chromosomer fastalength' part that calculates
+    # lengths of sequences in the given FASTA file.
+    fastalength_parser = subparsers.add_parser(
+        'fastalength',
+        description='Get lengths of sequences in the specified FASTA '
+                    'file (required to build a fragment map)',
+        help='get lengths of sequences from a FASTA file',
+    )
+
+    # required arguments for the 'fastalength' routine
+    fastalength_parser.add_argument('fasta',
+                                    help='a FASTA file which sequence '
+                                         'lengths are to be obtained')
+    fastalength_parser.add_argument('output',
+                                    help='an output file of sequence '
+                                         'lengths')
+
     args = parser.parse_args()
 
     if args.command == 'assemble':
@@ -144,9 +182,8 @@ def chromosomer():
                               args.output_fasta,
                               args.save_soft_mask)
     elif args.command == 'fragmentmap':
-        fragment_lengths = SeqLengths(args.fragment_lengths)
-        map_creator = AlignmentToMap(args.gap_size,
-                                     fragment_lengths.lengths())
+        fragment_lengths = read_fragment_lengths(args.fragment_lengths)
+        map_creator = AlignmentToMap(args.gap_size, fragment_lengths)
         alignments = BlastTab(args.alignment_file)
         fragment_map = map_creator.blast(alignments,
                                          args.ratio_threshold)
@@ -188,3 +225,9 @@ def chromosomer():
         cli_logger.info('%d features transferred', transferred_count)
         cli_logger.info('%d features skipped',
                         total_count - transferred_count)
+    elif args.command == 'fastalength':
+        seq_lengths = SeqLengths(args.fasta)
+        with open(args.output, 'wt') as length_file:
+            length_writer = csv.writer(length_file, delimiter='\t')
+            for header, length in seq_lengths.lengths().iteritems():
+                length_writer.writerow((header, length, ))
