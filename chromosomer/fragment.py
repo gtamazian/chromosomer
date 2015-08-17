@@ -222,8 +222,10 @@ class AlignmentToMap(object):
             fragment placed to a reference
         :type blast_alignments: BlastTab
         :type bitscore_ratio_threshold: float
-        :return: the fragment map constructed from the blast_alignments
-        :rtype: Map
+        :return: a tuple containing the fragment map constructed from
+            the provided BLAST alignments, the list of unlocalized
+            fragments and a list of unplaced fragments
+        :rtype: tuple
         """
         self.__anchors = {}
         self.__unlocalized = []
@@ -336,7 +338,8 @@ class AlignmentToMap(object):
 
         self.__anchor_fragments()
 
-        return self.__fragment_map
+        return (self.__fragment_map, self.__unlocalized,
+                self.__unplaced)
 
     def __anchor_fragments(self):
         """

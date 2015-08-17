@@ -17,6 +17,7 @@ from chromosomer.transfer import BedTransfer
 from chromosomer.transfer import Gff3Transfer
 from chromosomer.transfer import VcfTransfer
 from bioformats.blast import BlastTab
+from os.path import splitext
 
 from chromosomer.fragment import logger
 logger.setLevel(logging.INFO)
@@ -185,9 +186,19 @@ def chromosomer():
         fragment_lengths = read_fragment_lengths(args.fragment_lengths)
         map_creator = AlignmentToMap(args.gap_size, fragment_lengths)
         alignments = BlastTab(args.alignment_file)
-        fragment_map = map_creator.blast(alignments,
-                                         args.ratio_threshold)
+        fragment_map, unlocalized, unplaced = map_creator.blast(
+            alignments, args.ratio_threshold)
         fragment_map.write(args.output_map)
+        # write unlocalized and unplaced fragments
+        with open(splitext(args.output_map)[0] + '_unlocalized.txt',
+                  'w') as unlocalized_file:
+            for i in unlocalized:
+                unlocalized_file.write('{}\t{}\n'.format(*i))
+        with open(splitext(args.output_map)[0] + '_unplaced.txt',
+                  'w') as unplaced_file:
+            for i in unplaced:
+                unplaced_file.write('{}\n'.format(i))
+
     elif args.command == 'transfer':
         total_count = transferred_count = 0
         if args.format == 'bed':

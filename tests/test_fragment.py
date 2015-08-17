@@ -338,7 +338,7 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
         map_creator = AlignmentToMap(self.__gap_size,
                                      fragment_lengths.lengths())
         blast_alignments = BlastTab(self.__alignment_file)
-        new_map = map_creator.blast(blast_alignments, 1.2)
+        new_map = map_creator.blast(blast_alignments, 1.2)[0]
         orig_map = Map()
         orig_map.read(self.__map_file)
 
