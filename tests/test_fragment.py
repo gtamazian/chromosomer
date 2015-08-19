@@ -8,6 +8,7 @@ import os
 import glob
 import logging
 import pyfaidx
+import random
 import string
 import tempfile
 import unittest
@@ -357,6 +358,39 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
                                      min_fragment_length=50)
         with self.assertRaises(AlignmentToMapError):
             map_creator.blast(blast_alignments, 1.2)
+
+    def test_shrink_gaps(self):
+        """
+        Test the gap shrinkage function.
+        """
+        test_map = Map()
+        end = 0
+        for i in xrange(10):
+            for name in ('fr_{}'.format(i), 'GAP'):
+                fr_length = random.randrange(100)
+                new_record = Map.Record(
+                    name, fr_length, 0, fr_length,
+                    random.choice(('+', '-')), 'ref_1', end,
+                    end + fr_length
+                )
+                end += fr_length
+                test_map.add_record(new_record)
+
+        gap_size = 50
+        test_map.shrink_gaps(gap_size)
+
+        # check if gap sizes are of the specified value
+        for i in test_map.chromosomes():
+            for j in test_map.fragments(i):
+                if j.fr_name == 'GAP':
+                    self.assertEqual(j.fr_length, gap_size)
+                    self.assertEqual(j.fr_end - j.fr_start, gap_size)
+                    self.assertEqual(j.ref_end - j.ref_start,
+                                     gap_size)
+            # check that fragments are adjacent to each other
+            for j, k in zip(list(test_map.fragments(i))[:-1],
+                            list(test_map.fragments(i))[1:]):
+                self.assertEqual(j.ref_end, k.ref_start)
 
     def tearDown(self):
         os.unlink(self.__map_file)

@@ -170,6 +170,41 @@ class Map(object):
                     seq.append(record_seq)
                 chromosome_writer.write(chromosome, ''.join(seq))
 
+    def shrink_gaps(self, gap_size):
+        """
+        Shrink gaps inserted into the map to the specified size.
+
+        :param gap_size: a required gap size
+        :type gap_size: int
+        """
+        # process each chromosome separately
+        for chrom in self.__fragments.keys():
+            if len(self.__fragments[chrom]) > 1:
+                shifts = []
+                # iterate through gaps
+                for i in self.__fragments[chrom]:
+                    if i.fr_name == 'GAP':
+                        shifts.append(i.fr_length - gap_size)
+                    else:
+                        shifts.append(0)
+                # calculate absolute shifts for chromosome fragments
+                accumulated_shift = 0
+                for i in xrange(len(shifts)):
+                    accumulated_shift += shifts[i]
+                    shifts[i] = accumulated_shift
+                for i in xrange(len(self.__fragments[chrom])):
+                    fragment = list(self.__fragments[chrom][i])
+                    if fragment[0] == 'GAP':
+                        # change gap length and end position
+                        fragment[1] = gap_size
+                        fragment[3] = gap_size
+                        fragment[6] -= shifts[i-1]
+                        fragment[7] = fragment[6] + gap_size
+                    else:
+                        fragment[6] -= shifts[i]
+                        fragment[7] -= shifts[i]
+                    self.__fragments[chrom][i] = Map.Record(*fragment)
+
 
 class AlignmentToMap(object):
     """

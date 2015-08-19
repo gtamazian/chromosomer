@@ -130,6 +130,11 @@ def chromosomer():
              'genome'
     )
 
+    fragmentmap_parser.add_argument(
+        '-s', '--shrink_gaps', action='store_true',
+        help='shrink large interfragment gaps to the specified size'
+    )
+
     # Parser for the 'chromosomer transfer' part that transfers
     # genome feature annotation from fragments to their assembly
     transfer_parser = subparsers.add_parser(
@@ -188,6 +193,8 @@ def chromosomer():
         alignments = BlastTab(args.alignment_file)
         fragment_map, unlocalized, unplaced = map_creator.blast(
             alignments, args.ratio_threshold)
+        if args.shrink_gaps:
+            fragment_map.shrink_gaps(args.gap_size)
         fragment_map.write(args.output_map)
         # write unlocalized and unplaced fragments
         with open(splitext(args.output_map)[0] + '_unlocalized.txt',
