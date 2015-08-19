@@ -20,20 +20,6 @@ from bioformats.blast import BlastTab
 from os.path import splitext
 
 from chromosomer.fragment import logger
-logger.setLevel(logging.INFO)
-logger.propagate = False
-formatter = logging.Formatter('%(asctime)-15s - %(message)s',
-                              '%Y-%m-%d %H:%M:%S')
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-
-logging.basicConfig()
-cli_logger = logging.getLogger(__name__)
-cli_logger.propagate = False
-cli_logger.addHandler(ch)
-cli_logger.setLevel(logging.INFO)
 
 
 def read_fragment_lengths(filename):
@@ -64,6 +50,9 @@ def chromosomer():
     parser = argparse.ArgumentParser(
         description='Reference-assisted chromosome assembly tool.')
     subparsers = parser.add_subparsers(dest='command')
+
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='show debugging messages')
 
     # Parser for the 'chromosomer assemble' part that produces a FASTA
     # file of assembled chromosomes from the specified fragment map.
@@ -180,6 +169,24 @@ def chromosomer():
                                          'lengths')
 
     args = parser.parse_args()
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+        logger.propagate = False
+        formatter = logging.Formatter('%(asctime)-15s - %(message)s',
+                                      '%Y-%m-%d %H:%M:%S')
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.INFO)
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
+
+        logging.basicConfig()
+        cli_logger = logging.getLogger(__name__)
+        cli_logger.propagate = False
+        cli_logger.addHandler(ch)
+        cli_logger.setLevel(logging.INFO)
 
     if args.command == 'assemble':
         fragment_map = Map()

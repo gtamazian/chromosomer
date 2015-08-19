@@ -60,6 +60,7 @@ class Map(object):
         :type: str
         """
         lineno = 0
+        i = 0
         with open(filename) as input_map_file:
             for line in input_map_file:
                 lineno += 1
@@ -77,6 +78,9 @@ class Map(object):
                         raise MapError
                 new_record = Map.Record(*line_parts)
                 self.add_record(new_record)
+                i += 1
+        logger.debug('map of %d fragments was successfully read from '
+                     '%s', i, filename)
 
     def chromosomes(self):
         """
@@ -120,11 +124,15 @@ class Map(object):
         :type filename: str
         """
         template = '\t'.join(['{}'] * len(self.record_names)) + '\n'
+        i = 0
         with open(filename, 'w') as output_map_file:
             for chromosome in self.chromosomes():
                 for fragment in self.fragments(chromosome):
                     new_line = template.format(*fragment)
                     output_map_file.write(new_line)
+                    i += 1
+        logger.debug('the map of %d fragments successfully written '
+                     'to %s', i, filename)
 
     def assemble(self, fragment_filename, output_filename,
                  save_soft_mask=False):
@@ -141,6 +149,13 @@ class Map(object):
         :type output_filename: str
         :type save_soft_mask: bool
         """
+        logger.debug('assembling chromosomes...')
+        logger.debug('FASTA of fragments: %s', fragment_filename)
+        logger.debug('FASTA of chromosomes: %s', output_filename)
+        logger.debug('saving soft mask: %r', save_soft_mask)
+        num_fragments = 0
+        num_chromosomes = 0
+
         fragment_fasta = pyfaidx.Fasta(fragment_filename)
         complement = string.maketrans('ATCGatcgNnXx', 'TAGCtagcNnXx')
         with Writer(output_filename) as chromosome_writer:
@@ -168,7 +183,12 @@ class Map(object):
                             record_seq = record_seq[::-1].translate(
                                 complement)
                     seq.append(record_seq)
+                    num_fragments += 1
                 chromosome_writer.write(chromosome, ''.join(seq))
+                num_chromosomes += 1
+
+        logger.debug('%d fragments assembled to %d chromosomes',
+                     num_fragments, num_chromosomes)
 
     def shrink_gaps(self, gap_size):
         """
@@ -177,6 +197,9 @@ class Map(object):
         :param gap_size: a required gap size
         :type gap_size: int
         """
+        logger.debug('shrinking gaps to %d bp', gap_size)
+        total_shift = 0
+
         # process each chromosome separately
         for chrom in self.__fragments.keys():
             if len(self.__fragments[chrom]) > 1:
@@ -184,7 +207,9 @@ class Map(object):
                 # iterate through gaps
                 for i in self.__fragments[chrom]:
                     if i.fr_name == 'GAP':
-                        shifts.append(i.fr_length - gap_size)
+                        len_diff = i.fr_length - gap_size
+                        shifts.append(len_diff)
+                        total_shift += len_diff
                     else:
                         shifts.append(0)
                 # calculate absolute shifts for chromosome fragments
@@ -204,6 +229,8 @@ class Map(object):
                         fragment[6] -= shifts[i]
                         fragment[7] -= shifts[i]
                     self.__fragments[chrom][i] = Map.Record(*fragment)
+
+        logger.debug('in total, gaps shrinked by %d bp', total_shift)
 
 
 class AlignmentToMap(object):
