@@ -251,9 +251,9 @@ def chromosomer():
                     writer.write_record(transferred_feature)
             writer.close()
 
-        cli_logger.info('%d features transferred', transferred_count)
-        cli_logger.info('%d features skipped',
-                        total_count - transferred_count)
+        logger.info('%d features transferred', transferred_count)
+        logger.info('%d features skipped',
+                    total_count - transferred_count)
     elif args.command == 'fastalength':
         seq_lengths = SeqLengths(args.fasta)
         with open(args.output, 'wt') as length_file:
