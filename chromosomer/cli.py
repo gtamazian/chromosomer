@@ -217,24 +217,28 @@ def chromosomer():
         total_count = transferred_count = 0
         if args.format == 'bed':
             transferrer = BedTransfer(args.map)
-            with bioformats.bed.Writer(args.output) as output_file:
-                for feature in bioformats.bed.Reader(
-                        args.annotation).records():
-                    total_count += 1
-                    transferred_feature = transferrer.feature(feature)
-                    if transferred_feature is not None:
-                        transferred_count += 1
-                        output_file.write(transferred_feature)
+            with open(args.annotation) as input_file:
+                with bioformats.bed.Writer(args.output) as output_file:
+                    for feature in bioformats.bed.Reader(
+                            input_file).records():
+                        total_count += 1
+                        transferred_feature = transferrer.feature(
+                            feature)
+                        if transferred_feature is not None:
+                            transferred_count += 1
+                            output_file.write(transferred_feature)
         elif args.format == 'gff3':
             transferrer = Gff3Transfer(args.map)
-            with bioformats.gff3.Writer(args.output) as output_file:
-                for feature in bioformats.gff3.Reader(
-                        args.annotation).records():
-                    total_count += 1
-                    transferred_feature = transferrer.feature(feature)
-                    if transferred_feature is not None:
-                        transferred_count += 1
-                        output_file.write(transferred_feature)
+            with open(args.annotation) as input_file:
+                with bioformats.gff3.Writer(args.output) as output_file:
+                    for feature in bioformats.gff3.Reader(
+                            input_file).records():
+                        total_count += 1
+                        transferred_feature = transferrer.feature(
+                            feature)
+                        if transferred_feature is not None:
+                            transferred_count += 1
+                            output_file.write(transferred_feature)
         elif args.format == 'vcf':
             transferrer = VcfTransfer(args.map)
             reader = vcf.Reader(open(args.annotation))

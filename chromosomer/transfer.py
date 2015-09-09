@@ -109,7 +109,7 @@ class BedTransfer(Transfer):
         transferred_record[2] = max(start, end)
         transferred_record[5] = strand
 
-        return bioformats.bed.BedRecord(*transferred_record)
+        return bioformats.bed.Record(*transferred_record)
 
 
 class Gff3Transfer(Transfer):
@@ -152,7 +152,7 @@ class Gff3Transfer(Transfer):
         transferred_record[4] = max(start, end)
         transferred_record[6] = strand
 
-        return bioformats.gff3.Gff3Record(*transferred_record)
+        return bioformats.gff3.Record(*transferred_record)
 
 
 class VcfTransfer(Transfer):
