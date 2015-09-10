@@ -9,10 +9,12 @@ import bioformats.bed
 import bioformats.gff3
 import csv
 import logging
+import os
 import vcf
 from chromosomer.fragment import AlignmentToMap
 from chromosomer.fragment import SeqLengths
 from chromosomer.fragment import Map
+from chromosomer.fragment import Simulator
 from chromosomer.transfer import BedTransfer
 from chromosomer.transfer import Gff3Transfer
 from chromosomer.transfer import VcfTransfer
@@ -168,6 +170,35 @@ def chromosomer():
                                     help='an output file of sequence '
                                          'lengths')
 
+    # Parser for the 'chromosomer simulator' routine
+    simulator_parser = subparsers.add_parser(
+        'simulator',
+        description='Simulate fragments and test assembly for '
+                    'testing purposes.',
+        help='fragment simulator for testing purposes'
+    )
+
+    # required arguments for the 'simulator' routine
+    simulator_parser.add_argument('fr_num', type=int,
+                                  help='the number of '
+                                       'chromosome fragments')
+    simulator_parser.add_argument('fr_len', type=int,
+                                  help='the length of fragments')
+    simulator_parser.add_argument('chr_num', type=int,
+                                  help='the number of chromosomes')
+    simulator_parser.add_argument('output_dir',
+                                  help='the directory for output files')
+    simulator_parser.add_argument('-g', '--gap_size', type=int,
+                                  default=2000,
+                                  help='the size of gaps between '
+                                       'fragments on a chromosome')
+    simulator_parser.add_argument('-p', '--unplaced', type=int,
+                                  help='the number of unplaced '
+                                       'fragments')
+    simulator_parser.add_argument('--prefix', default='',
+                                  help='the prefix for output file '
+                                       'names')
+
     args = parser.parse_args()
 
     if args.debug:
@@ -260,3 +291,14 @@ def chromosomer():
             length_writer = csv.writer(length_file, delimiter='\t')
             for header, length in seq_lengths.lengths().iteritems():
                 length_writer.writerow((header, length, ))
+    elif args.command == 'simulator':
+        fr_simulator = Simulator(args.fr_len, args.fr_num,
+                                 args.chr_num, args.unplaced,
+                                 args.gap_size)
+        map_file = os.path.join(args.output_dir,
+                                args.prefix + 'map.txt')
+        chr_file = os.path.join(args.output_dir,
+                                args.prefix + 'chromosomes.fa')
+        fr_file = os.path.join(args.output_dir, args.prefix +
+                               'fragments.fa')
+        fr_simulator.write(map_file, fr_file, chr_file)

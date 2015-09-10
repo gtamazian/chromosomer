@@ -82,6 +82,10 @@ class Map(object):
         logger.debug('map of %d fragments was successfully read from '
                      '%s', i, filename)
 
+    @property
+    def records(self):
+        return self.__fragments
+
     def chromosomes(self):
         """
         Return an iterator to the chromosomes the fragment map
@@ -596,6 +600,13 @@ class Simulator(object):
             for name, seq in self.__chromosomes.iteritems():
                 chromosome_fasta.write(name, seq)
 
+        logger.debug('a simulated map of %d fragments written to %s',
+                     len(self.__map.records), map_file)
+        logger.debug('%d simulated fragments written to %s',
+                     len(self.__fragments), fragment_file)
+        logger.debug('%d simulated chromosomes written to %s',
+                     len(self.__chromosomes), chromosome_file)
+
 
 class SeqLengths(object):
     """
@@ -621,9 +632,14 @@ class SeqLengths(object):
             values are their lengths
         :rtype: dict
         """
+        total_length = 0
         if not self.__lengths:
             reader = pyfaidx.Fasta(self.__filename)
             for seq in reader.keys():
                 self.__lengths[seq] = len(reader[seq])
+                total_length += len(reader[seq])
+
+        logger.debug('%d sequences analyzed with the total length of '
+                     '%d bp', len(self.__lengths), total_length)
 
         return self.__lengths
