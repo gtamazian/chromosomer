@@ -228,22 +228,22 @@ def chromosomer():
     elif args.command == 'fragmentmap':
         fragment_lengths = read_fragment_lengths(args.fragment_lengths)
         map_creator = AlignmentToMap(args.gap_size, fragment_lengths)
-        alignments = BlastTab(args.alignment_file)
-        fragment_map, unlocalized, unplaced = map_creator.blast(
-            alignments, args.ratio_threshold)
-        if args.shrink_gaps:
-            fragment_map.shrink_gaps(args.gap_size)
-        fragment_map.write(args.output_map)
-        # write unlocalized and unplaced fragments
-        with open(splitext(args.output_map)[0] + '_unlocalized.txt',
-                  'w') as unlocalized_file:
-            for i in unlocalized:
-                unlocalized_file.write('{}\t{}\n'.format(*i))
-        with open(splitext(args.output_map)[0] + '_unplaced.txt',
-                  'w') as unplaced_file:
-            for i in unplaced:
-                unplaced_file.write('{}\n'.format(i))
-
+        with open(args.alignment_file) as alignment_file:
+            alignments = BlastTab(alignment_file)
+            fragment_map, unlocalized, unplaced = map_creator.blast(
+                alignments, args.ratio_threshold)
+            if args.shrink_gaps:
+                fragment_map.shrink_gaps(args.gap_size)
+            fragment_map.write(args.output_map)
+            # write unlocalized and unplaced fragments
+            with open(splitext(args.output_map)[0] + '_unlocalized.txt',
+                      'w') as unlocalized_file:
+                for i in unlocalized:
+                    unlocalized_file.write('{}\t{}\n'.format(*i))
+            with open(splitext(args.output_map)[0] + '_unplaced.txt',
+                      'w') as unplaced_file:
+                for i in unplaced:
+                    unplaced_file.write('{}\n'.format(i))
     elif args.command == 'transfer':
         total_count = transferred_count = 0
         if args.format == 'bed':

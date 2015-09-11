@@ -338,26 +338,29 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
         fragment_lengths = SeqLengths(self.__fragment_file)
         map_creator = AlignmentToMap(self.__gap_size,
                                      fragment_lengths.lengths())
-        blast_alignments = BlastTab(self.__alignment_file)
-        new_map = map_creator.blast(blast_alignments, 1.2)[0]
-        orig_map = Map()
-        orig_map.read(self.__map_file)
+        with open(self.__alignment_file) as alignment_file:
+            blast_alignments = BlastTab(alignment_file)
+            new_map = map_creator.blast(blast_alignments, 1.2)[0]
+            orig_map = Map()
+            orig_map.read(self.__map_file)
 
-        # compare the obtained fragment map with the original one
-        for chromosome in orig_map.chromosomes():
-            for orig, new in izip(orig_map.fragments(chromosome),
-                                  new_map.fragments(chromosome)):
-                self.assertEqual(orig, new)
+            # compare the obtained fragment map with the original one
+            for chromosome in orig_map.chromosomes():
+                for orig, new in izip(orig_map.fragments(chromosome),
+                                      new_map.fragments(chromosome)):
+                    self.assertEqual(orig, new)
 
-        # now test againt the situation when a fragment which length
-        # is missing is added to the alignments
-        incomplete_lengths = fragment_lengths.lengths()
-        del incomplete_lengths[sorted(incomplete_lengths.keys())[0]]
-        map_creator = AlignmentToMap(self.__gap_size,
-                                     fragment_lengths.lengths(),
-                                     min_fragment_length=50)
-        with self.assertRaises(AlignmentToMapError):
-            map_creator.blast(blast_alignments, 1.2)
+            # now test againt the situation when a fragment which length
+            # is missing is added to the alignments
+        with open(self.__alignment_file) as alignment_file:
+            blast_alignments = BlastTab(alignment_file)
+            incomplete_lengths = fragment_lengths.lengths()
+            del incomplete_lengths[sorted(incomplete_lengths.keys())[0]]
+            map_creator = AlignmentToMap(self.__gap_size,
+                                         incomplete_lengths,
+                                         min_fragment_length=50)
+            with self.assertRaises(AlignmentToMapError):
+                map_creator.blast(blast_alignments, 1.2)
 
     def test_shrink_gaps(self):
         """
