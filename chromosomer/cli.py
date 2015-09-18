@@ -53,6 +53,9 @@ def chromosomer():
         description='Reference-assisted chromosome assembly tool.')
     subparsers = parser.add_subparsers(dest='command')
 
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s 0.1.2')
+
     parser.add_argument('-d', '--debug', action='store_true',
                         help='show debugging messages')
 
