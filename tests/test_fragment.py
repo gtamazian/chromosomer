@@ -396,9 +396,9 @@ class TestFragmentAlignmentToMap(unittest.TestCase):
                 self.assertEqual(j.ref_end, k.ref_start)
 
     def tearDown(self):
-        os.unlink(self.__map_file)
-        os.unlink(self.__fragment_file)
-        os.unlink(self.__chromosome_file)
-        os.unlink(self.__alignment_file)
+        for i in (self.__map_file, self.__fragment_file,
+                  self.__chromosome_file, self.__alignment_file):
+            if os.path.isfile(i):
+                os.unlink(i)
         for i in glob.glob('{}*'.format(self.__chromosome_file)):
             os.unlink(i)

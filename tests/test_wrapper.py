@@ -66,7 +66,8 @@ class TestWrapperBlastN(unittest.TestCase):
         temp_files = glob.glob('{}*'.format(self.__fasta))
         for i in temp_files:
             os.unlink(i)
-        os.unlink(self.__output)
+        if os.path.isfile(self.__output):
+            os.unlink(self.__output)
 
     def test_launch(self):
         """
