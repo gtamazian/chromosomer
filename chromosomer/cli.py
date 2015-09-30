@@ -54,7 +54,7 @@ def chromosomer():
     subparsers = parser.add_subparsers(dest='command')
 
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 0.1.2')
+                        version='%(prog)s 0.1.2.post1')
 
     parser.add_argument('-d', '--debug', action='store_true',
                         help='show debugging messages')
@@ -152,6 +152,7 @@ def chromosomer():
 
     # optional arguments for the 'transfer' routine
     transfer_parser.add_argument('-f', '--format', default='bed',
+                                 choices=['bed', 'gff3', 'vcf'],
                                  help='the format of a file of '
                                       'annotated features (bed, '
                                       'gff3 or vcf)')
