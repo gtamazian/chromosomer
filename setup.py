@@ -4,12 +4,6 @@
 # Copyright (C) 2015 by Gaik Tamazian
 # gaik (dot) tamazian (at) gmail (dot) com
 
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Copyright (C) 2015 by Gaik Tamazian
-# gaik (dot) tamazian (at) gmail (dot) com
-
 from setuptools import setup, find_packages
 
 setup(name='chromosomer',
