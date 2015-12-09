@@ -54,7 +54,7 @@ def chromosomer():
     subparsers = parser.add_subparsers(dest='command')
 
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 0.1.2.post1')
+                        version='%(prog)s 0.1.3')
 
     parser.add_argument('-d', '--debug', action='store_true',
                         help='show debugging messages')
@@ -128,6 +128,37 @@ def chromosomer():
         '-s', '--shrink_gaps', action='store_true',
         help='shrink large interfragment gaps to the specified size'
     )
+
+    # Parser for the 'chromosomer fragmentmapstat' part that reports
+    # statistics on a fragment map
+    fragmentmapstat_parser = subparsers.add_parser(
+        'fragmentmapstat',
+        description='Show statistics on a fragment map.',
+        help='show fragment map statistics'
+    )
+
+    # required arguments for the 'fragmentmapstat' routine
+    fragmentmapstat_parser.add_argument('map',
+                                        help='a fragment map file')
+    fragmentmapstat_parser.add_argument('output',
+                                        help='an output file of '
+                                             'fragment map statistics')
+
+    # Parser for the 'chromosomer fragmentmapbed' part that converts
+    # a fragement map to the BED format
+    fragmentmapbed_parser = subparsers.add_parser(
+        'fragmentmapbed',
+        description='Convert a fragment map to the BED format.',
+        help='convert a fragment map to the BED format'
+    )
+
+    # required arguments for the 'fragmentmapbed' routine
+    fragmentmapbed_parser.add_argument('map',
+                                       help='a fragment map file')
+    fragmentmapbed_parser.add_argument('output',
+                                       help='an output BED file '
+                                            'representing the '
+                                            'fragment map')
 
     # Parser for the 'chromosomer transfer' part that transfers
     # genome feature annotation from fragments to their assembly
@@ -306,3 +337,16 @@ def chromosomer():
         fr_file = os.path.join(args.output_dir, args.prefix +
                                'fragments.fa')
         fr_simulator.write(map_file, fr_file, chr_file)
+    elif args.command == 'fragmentmapstat':
+        fragment_map = Map()
+        fragment_map.read(args.map)
+        summary = fragment_map.summary()
+        template = '\t'.join(['{}'] * 4) + '\n'
+        with open(args.output, 'w') as output_file:
+            for chromosome in sorted(summary.keys()):
+                output_file.write(template.format(chromosome,
+                                                  *summary[chromosome]))
+    elif args.command == 'fragmentmapbed':
+        fragment_map = Map()
+        fragment_map.read(args.map)
+        fragment_map.convert2bed(args.output)
