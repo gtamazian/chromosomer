@@ -7,17 +7,17 @@ Chromosomer
 Chromosomer is a reference-assisted assembly tool for producing draft
 chromosome sequences. It provides the following routines:
 
- - ``fragmentmap`` - produce a fragment map from fragment alignments to reference chromosomes;
+- ``fragmentmap`` - produce a fragment map from fragment alignments to reference chromosomes;
 
- - ``assemble`` - obtain FASTA sequences of assembled chromosomes from a fragment map;
+- ``assemble`` - obtain FASTA sequences of assembled chromosomes from a fragment map;
 
- - ``transfer`` - move annotated regions from original fragments to assembled chromosomes;
+- ``transfer`` - move annotated regions from original fragments to assembled chromosomes;
 
- - ``fragmentmapstat`` - get summary on a fragment map;
+- ``fragmentmapstat`` - get summary on a fragment map;
 
- - ``fragmentmapbed`` - convert a fragment map to the BED format (e.g., for viewing in a genome browser);
+- ``fragmentmapbed`` - convert a fragment map to the BED format (e.g., for viewing in a genome browser);
 
- - ``fastalength`` - get lengths of sequences in a FASTA file (required for ``fragmentmap``).
+- ``fastalength`` - get lengths of sequences in a FASTA file (required for ``fragmentmap``).
 
 Installation
 ------------
