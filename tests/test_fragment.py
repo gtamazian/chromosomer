@@ -106,6 +106,14 @@ class TestFragmentMap(unittest.TestCase):
         with self.assertRaises(MapError):
             list(fragment_map.fragments('chrN'))
 
+    def test_summary(self):
+        """
+        Test the Map summary routine.
+        """
+        fragment_map = Map()
+        fragment_map.read(self.__test_line)
+        self.assertIsInstance(fragment_map.summary(), dict)
+
     def test_write(self):
         """
         Test the Map writing routine.

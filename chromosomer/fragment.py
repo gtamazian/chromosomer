@@ -14,6 +14,7 @@ from chromosomer.exception import AlignmentToMapError
 from bioformats.fasta import RandomSequence
 from bioformats.fasta import Writer
 from collections import defaultdict
+from itertools import izip
 from collections import namedtuple
 from operator import attrgetter
 
@@ -235,6 +236,25 @@ class Map(object):
                     self.__fragments[chrom][i] = Map.Record(*fragment)
 
         logger.debug('in total, gaps shrinked by %d bp', total_shift)
+
+    def summary(self):
+        """
+        Return a summary on the fragment map.
+
+        :return: a dictionary of tuples each describing one assembled
+            chromosome
+        :rtype: dict
+        """
+        summary = {}
+        for chromosome in self.chromosomes():
+            gaps = 0
+            chr_fragments = list(self.fragments(chromosome))
+            for i, j in izip(chr_fragments[:-1], chr_fragments[1:]):
+                gaps += j.ref_start - i.ref_end
+            chr_length = chr_fragments[-1].ref_end
+            fr_num = len(chr_fragments)
+            summary[chromosome] = (fr_num, gaps, chr_length)
+        return summary
 
 
 class AlignmentToMap(object):
