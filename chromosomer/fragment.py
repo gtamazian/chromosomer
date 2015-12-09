@@ -249,8 +249,9 @@ class Map(object):
         for chromosome in self.chromosomes():
             gaps = 0
             chr_fragments = list(self.fragments(chromosome))
-            for i, j in izip(chr_fragments[:-1], chr_fragments[1:]):
-                gaps += j.ref_start - i.ref_end
+            for fragment in chr_fragments:
+                if fragment.fr_name == 'GAP':
+                    gaps += fragment.fr_length
             chr_length = chr_fragments[-1].ref_end
             fr_num = len(chr_fragments)
             summary[chromosome] = (fr_num, gaps, chr_length)
