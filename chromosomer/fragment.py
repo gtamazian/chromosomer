@@ -256,6 +256,32 @@ class Map(object):
             summary[chromosome] = (fr_num, gaps, chr_length)
         return summary
 
+    def convert2bed(self, bed_filename):
+        """
+        Given a name of the output BED3 file, write the fragment map
+        to it in the BED format.
+
+        :param bed_filename: a name of the output BED file of the
+            fragment map
+        :type bed_filename: str
+        """
+        template = '\t'.join(['{}'] * (len(Map.record_names) + 1)) + \
+                   '\n'
+        with open(bed_filename, 'w') as bed_file:
+            for chromosome in sorted(self.chromosomes()):
+                for fragment in self.fragments(chromosome):
+                    bed_file.write(template.format(
+                        fragment.ref_chr,
+                        fragment.ref_start,
+                        fragment.ref_end,
+                        fragment.fr_name,
+                        1000,
+                        fragment.fr_strand,
+                        fragment.fr_start,
+                        fragment.fr_end,
+                        fragment.fr_length
+                    ))
+
 
 class AlignmentToMap(object):
     """

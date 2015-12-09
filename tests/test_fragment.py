@@ -12,6 +12,7 @@ import random
 import string
 import tempfile
 import unittest
+from bioformats.bed import Reader
 from bioformats.blast import BlastTab
 from bioformats.fasta import RandomSequence
 from bioformats.fasta import Writer
@@ -40,6 +41,7 @@ class TestFragmentMap(unittest.TestCase):
         self.__output_dir = os.path.join(
             'data', 'fragment_map'
         )
+        self.__output_file = tempfile.NamedTemporaryFile().name
         self.__incorrect_files = os.listdir(self.__incorrect_file_dir)
         # silence the logging message
         logging.disable(logging.ERROR)
@@ -113,6 +115,19 @@ class TestFragmentMap(unittest.TestCase):
         fragment_map = Map()
         fragment_map.read(self.__test_line)
         self.assertIsInstance(fragment_map.summary(), dict)
+
+    def test_convert2bed(self):
+        """
+        Test the BED conversion routine.
+        """
+        fragment_map = Map()
+        fragment_map.read(self.__test_line)
+        fragment_map.convert2bed(self.__output_file)
+        # try to read the produced BED file
+        with open(self.__output_file) as bed_file:
+            reader = Reader(bed_file)
+            for _ in reader.records():
+                pass
 
     def test_write(self):
         """
@@ -228,6 +243,10 @@ class TestFragmentMap(unittest.TestCase):
         os.unlink(output_chromosomes + '.fai')
         os.unlink(output_fragments)
         os.unlink(output_fragments + '.fai')
+
+    def tearDown(self):
+        if os.path.isfile(self.__output_file):
+            os.unlink(self.__output_file)
 
 
 class TestFragmentLength(unittest.TestCase):
