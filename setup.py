@@ -7,7 +7,7 @@
 from setuptools import setup, find_packages
 
 setup(name='chromosomer',
-      version='0.1.3',
+      version='0.1.4',
       description='Reference-assisted chromosome assembly tool',
 
       author='Gaik Tamazian',

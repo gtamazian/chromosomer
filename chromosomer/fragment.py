@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015 by Gaik Tamazian
+# Copyright (C) 2015-2016 by Gaik Tamazian
 # gaik (dot) tamazian (at) gmail (dot) com
 
 import logging
@@ -690,3 +690,30 @@ class SeqLengths(object):
                      '%d bp', len(self.__lengths), total_length)
 
         return self.__lengths
+
+
+def agp2map(agp_filename, map_filename):
+    """
+    Given a name of an AGP file, convert it to the fragment map format.
+
+    :param agp_filename: a name of an AGP file
+    :param map_filename: a name of an output fragment map file
+    :type agp_filename: str
+    :type map_filename: str
+    """
+    with open(agp_filename) as agp_file:
+        with open(map_filename, 'w') as map_file:
+            for line in agp_file:
+                if line.startswith('#'):
+                    continue
+                line = line.rstrip()
+                line = line.split(None, 8)
+                if line[4] == 'N':
+                    output = ('GAP', int(line[5]), 0, int(line[5]),
+                              '+', line[0], int(line[1]) - 1,
+                              int(line[2]))
+                else:
+                    frag_len = int(line[7]) - int(line[6]) + 1
+                    output = (line[5], frag_len, 0, frag_len, line[8],
+                              line[0], int(line[1]) - 1, int(line[2]))
+                map_file.write('\t'.join(map(str, output)) + '\n')

@@ -15,6 +15,7 @@ from chromosomer.fragment import AlignmentToMap
 from chromosomer.fragment import SeqLengths
 from chromosomer.fragment import Map
 from chromosomer.fragment import Simulator
+from chromosomer.fragment import agp2map
 from chromosomer.transfer import BedTransfer
 from chromosomer.transfer import Gff3Transfer
 from chromosomer.transfer import VcfTransfer
@@ -54,7 +55,7 @@ def chromosomer():
     subparsers = parser.add_subparsers(dest='command')
 
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 0.1.3')
+                        version='%(prog)s 0.1.4')
 
     parser.add_argument('-d', '--debug', action='store_true',
                         help='show debugging messages')
@@ -234,6 +235,19 @@ def chromosomer():
                                   help='the prefix for output file '
                                        'names')
 
+    # Parser for the 'chromosomer agp2map' routine
+    agp2map_parser = subparsers.add_parser(
+        'agp2map',
+        description='Convert an AGP file to the fragment map format.',
+        help='convert an AGP file to a fragment map'
+    )
+
+    # required arguments for the 'agp2map' routine
+    agp2map_parser.add_argument('agp_file', help='an AGP file')
+    agp2map_parser.add_argument('output_file', help='the output '
+                                                    'fragment map '
+                                                    'file')
+
     args = parser.parse_args()
 
     if args.debug:
@@ -350,3 +364,5 @@ def chromosomer():
         fragment_map = Map()
         fragment_map.read(args.map)
         fragment_map.convert2bed(args.output)
+    elif args.command == 'agp2map':
+        agp2map(args.agp_file, args.output_file)

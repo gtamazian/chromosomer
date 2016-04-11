@@ -1,6 +1,10 @@
 Changes
 =======
 
+* 0.1.4
+-------
+- `agp2map` routine to convert an AGP file to the fragment map format.
+
 0.1.3
 -----
 - `fragmentmapbed` routine that converts a fragment map to the BED 
