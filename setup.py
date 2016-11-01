@@ -4,10 +4,11 @@
 # Copyright (C) 2015 by Gaik Tamazian
 # gaik (dot) tamazian (at) gmail (dot) com
 
+import chromosomer
 from setuptools import setup, find_packages
 
 setup(name='chromosomer',
-      version='0.1.4',
+      version=chromosomer.__version__,
       description='Reference-assisted chromosome assembly tool',
 
       author='Gaik Tamazian',
